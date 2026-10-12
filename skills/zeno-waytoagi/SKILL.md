@@ -33,7 +33,7 @@ lark-cli drive +search --query "关键词" --space-ids 7226178700923011075 --as 
 
 关键词最多 30 个字符。检查 `ok=true`，返回相关标题、搜索摘要和原文链接；搜索摘要只代表命中上下文，需要了解文章内容时再读取正文。
 
-需要更多结果或时间筛选时，见[扩展搜索](references/reading-options.md#扩展搜索)。
+需要翻页或只查标题时，见[扩展搜索](references/reading-options.md#扩展搜索)。
 
 ## 读取文章
 
