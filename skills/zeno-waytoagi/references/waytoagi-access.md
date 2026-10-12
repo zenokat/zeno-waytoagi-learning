@@ -11,6 +11,8 @@
 
 官方 CLI 自带说明可用 `lark-cli skills read lark-doc references/lark-doc-fetch.md` 和 `lark-cli skills read lark-drive references/lark-drive-search.md` 读取；首次使用相应操作时核对说明和 `--help`。不要猜测当前版本的参数或权限名。
 
+使用命名配置时，本文全部命令（每日脚本的两次只读调用、搜索、正文读取、auth）携带同一 `--profile <选定profile>`，不中途更换；选定策略见 SKILL.md。下文示例省略该参数，实际执行时按选定结果补上。
+
 ## 每日输入
 
 在本 Skill 目录执行：
@@ -70,7 +72,7 @@ CLI 管理本机应用配置、用户登录和凭证续期。用户身份需要�
 
 - 短期访问凭证将过期或已过期、续期凭证仍有效时，CLI 会在调用时尝试自动刷新。续期有效期以服务器响应为准，不把 7 天或 30 天写成永久固定值。
 - 续期凭证失效、撤销授权或新增缺失权限时，记录需要用户处理的具体原因。在同步协作中按实际所需 scope 发起新的授权链接和二维码，用户确认完成后由 Agent 完成后续认证；不复用过期链接，也不请求全部业务域。
-- 搜索需要 `search:docs:read`，节点元信息读取需要 `wiki:node:retrieve`；正文缺失权限按 CLI 的 `missing_scopes` 处理。既有流程申请过 `docs:document.content:read`、`docx:document:readonly` 和 `offline_access`，并非通过剥离其他历史授权验证出的最小权限集合。多次 login 为增量授权，不会撤销已有 scope。
+- 搜索需要 `search:docs:read`，节点元信息读取需要 `wiki:node:retrieve`；正文缺失权限按 CLI 的 `missing_scopes` 处理。所需范围是候选读取权限清单（`docs:document.content:read`、`docx:document:readonly`、`search:docs:read`、`wiki:node:retrieve`、`offline_access`），并非通过剥离其他历史授权验证出的最小集合；以 CLI 返回的具体缺失项为准增量授权，不请求全部业务域。多次 login 为增量授权，不会撤销已有 scope。
 - 资源访问被拒绝（如 Wiki `131006`）需区分文档或知识库授权与接口 scope；不要对同一拒绝反复登录、切换身份或自动修改共享权限。网络和限流按 CLI 的可重试提示处理，不将临时失败直接解释为需要重新授权。
 - 不导出用户凭证、访问令牌或应用密钥，不把授权链接、device code、Cookie、登录态写入 Skill 或 Git。获取失败只影响该来源，继续处理其他输入。
 

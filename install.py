@@ -17,6 +17,7 @@ import sys
 SKILL_NAME = "zeno-waytoagi"
 DEFAULT_SOURCE = Path(__file__).resolve().parent / "skills" / SKILL_NAME
 TRANSIENT_NAMES = {".DS_Store", "__pycache__"}
+TRANSIENT_SUFFIXES = {".pyc", ".pyo"}
 
 
 def package_files(root):
@@ -24,21 +25,38 @@ def package_files(root):
     return {path.relative_to(root) for path in root.rglob("*") if path.is_file()}
 
 
+def is_transient(relative_path):
+    """判断路径是否为安装与对比都应忽略的临时产物；输入相对 Path，返回 bool。
+
+    复制（copytree 回调）与一致性对比共用本规则，避免两侧过滤口径漂移：
+    缓存目录与系统垃圾按名称排除，Python 编译产物按后缀排除，无论位于包内哪一层。
+    """
+    return any(part in TRANSIENT_NAMES for part in relative_path.parts) or relative_path.suffix in TRANSIENT_SUFFIXES
+
+
 def ignore_transient(directory, names):
     """shutil.copytree 的排除回调；输入当前目录与条目名，返回应排除的临时产物名。"""
-    return {name for name in names if name in TRANSIENT_NAMES or name.endswith((".pyc", ".pyo"))}
+    return {name for name in names if is_transient(Path(name))}
+
+
+REQUIRED_FILES = ("SKILL.md", "scripts/waytoagi_daily.py", "references/waytoagi-access.md", "references/setup.md")
 
 
 def validate_source(source):
-    """确认安装源是完整的 Skill 包；输入源目录 Path，缺失关键文件时抛 ValueError。"""
-    if not (source / "SKILL.md").is_file():
-        raise ValueError(f"SOURCE_INCOMPLETE: 安装源缺少 SKILL.md：{source}")
+    """确认安装源是完整的 Skill 包；输入源目录 Path，缺失任一必需文件时抛 ValueError。
+
+    必需文件覆盖本产品的全部实际依赖：入口、每日脚本、读取参考与 setup 指南。
+    只验入口会让缺脚本的残包安装成功，失败被推迟到用户实际调用时。
+    """
+    missing = [name for name in REQUIRED_FILES if not (source / name).is_file()]
+    if missing:
+        raise ValueError(f"SOURCE_INCOMPLETE: 安装源缺少必需文件 {missing}：{source}")
 
 
 def directories_match(source, target):
     """逐文件对比两个目录内容；输入两个 Path，完全一致返回 True，否则 False。"""
-    source_files = {path for path in package_files(source) if not any(part in TRANSIENT_NAMES for part in path.parts)}
-    target_files = {path for path in package_files(target) if not any(part in TRANSIENT_NAMES for part in path.parts)}
+    source_files = {path for path in package_files(source) if not is_transient(path)}
+    target_files = {path for path in package_files(target) if not is_transient(path)}
     if source_files != target_files:
         return False
     _match, mismatch, errors = filecmp.cmpfiles(source, target, [str(path) for path in source_files], shallow=False)

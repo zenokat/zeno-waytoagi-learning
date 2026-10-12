@@ -63,6 +63,24 @@ class FreshInstallTests(unittest.TestCase):
             installed = Path(target_dir) / "zeno-waytoagi"
             self.assertEqual(package_files(installed), package_files(SKILL_PACKAGE))
 
+    def test_incomplete_source_is_rejected_without_touching_target(self):
+        """源缺少入口、每日脚本、读取参考或 setup 指南中任一必需文件时拒绝安装且不创建目标。
+
+        只验 SKILL.md 会让缺脚本的残包被装上，用户在后续调用时才暴露失败；
+        安装前必须一次性校验本产品的全部实际依赖文件。
+        """
+        required = ["SKILL.md", "scripts/waytoagi_daily.py", "references/waytoagi-access.md", "references/setup.md"]
+        for missing in required:
+            with self.subTest(missing=missing), \
+                    tempfile.TemporaryDirectory() as source_dir, tempfile.TemporaryDirectory() as target_dir:
+                source = Path(source_dir) / "zeno-waytoagi"
+                shutil.copytree(SKILL_PACKAGE, source, ignore=shutil.ignore_patterns("__pycache__"))
+                (source / missing).unlink()
+                process = run_install(["--source", str(source), "--target", target_dir], cwd=target_dir)
+                self.assertEqual(process.returncode, 1)
+                self.assertIn("SOURCE_INCOMPLETE", process.stdout)
+                self.assertFalse((Path(target_dir) / "zeno-waytoagi").exists())
+
 
 class ReinstallSafetyTests(unittest.TestCase):
     """目标已存在时的重复安装必须安全：一致跳过，冲突保全，不静默覆盖。"""
@@ -106,6 +124,31 @@ class ReinstallSafetyTests(unittest.TestCase):
             backup = Path(target_dir) / second.stdout.split("installed_with_backup:", 1)[1].strip()
             self.assertEqual((backup / "SKILL.md").read_text(), "用户本地修改过的内容")
             self.assertEqual((installed / "SKILL.md").read_text(), (SKILL_PACKAGE / "SKILL.md").read_text())
+
+    def test_reinstall_ignores_compiled_artifacts_on_both_sides(self):
+        """源中根级与包内散落的 .pyc 不进入安装结果；目标中用户运行产生的缓存不参与对比。
+
+        回归场景：源含 scripts/legacy.pyc 与根级 top.pyc 时，第一次安装排除它们，
+        第二次安装的一致性对比必须以同一规则排除两侧缓存，否则误报 TARGET_CONFLICT。
+        """
+        with tempfile.TemporaryDirectory() as source_dir, tempfile.TemporaryDirectory() as target_dir:
+            source = Path(source_dir) / "zeno-waytoagi"
+            shutil.copytree(SKILL_PACKAGE, source)
+            (source / "top.pyc").write_text("root compiled")
+            (source / "scripts" / "legacy.pyc").write_text("flat compiled")
+            first = run_install(["--source", str(source), "--target", target_dir], cwd=target_dir)
+            self.assertEqual(first.returncode, 0, first.stderr)
+            self.assertEqual(first.stdout.strip(), "installed")
+            installed = Path(target_dir) / "zeno-waytoagi"
+            self.assertFalse((installed / "top.pyc").exists())
+            self.assertFalse((installed / "scripts" / "legacy.pyc").exists())
+            (installed / "scripts" / "__pycache__").mkdir(exist_ok=True)
+            (installed / "scripts" / "__pycache__" / "waytoagi_daily.cpython-314.pyc").write_text("user cache")
+            (installed / "scripts" / "local.pyc").write_text("user flat cache")
+            second = run_install(["--source", str(source), "--target", target_dir], cwd=target_dir)
+            self.assertEqual(second.returncode, 0, second.stderr)
+            self.assertIn("already_installed", second.stdout)
+            self.assertTrue((installed / "scripts" / "local.pyc").exists())
 
 
 if __name__ == "__main__":
