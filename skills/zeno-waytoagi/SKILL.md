@@ -5,7 +5,7 @@ description: "非官方 WaytoAGI 知识库读取：获取近 7 日更新日志�
 
 # zeno-waytoagi
 
-读取 WaytoAGI 公开知识库的三类能力，全部通过官方 `lark-cli` 以显式用户身份完成，不使用匿名页面或 DOM 抓取。初次安装配置见[项目 README 的 Quickstart](https://github.com/zenokat/zeno-waytoagi#quickstart)。使用时缺少授权或权限，按本包[读取参考的身份与失败处理](references/waytoagi-access.md#身份与失败处理)核对并引导用户处理；读取脚本不自行登录。
+读取 WaytoAGI 公开知识库的三类能力，全部通过官方 `lark-cli` 以显式用户身份完成，不使用匿名页面或 DOM 抓取。用户要求安装配置，或依赖与飞书授权尚未就绪时，读取包内 [setup.md](setup.md) 完成环境检查、配置与验证。使用中的具体读取错误按本包[读取参考的身份与失败处理](references/waytoagi-access.md#身份与失败处理)处理；读取脚本不自行登录。
 
 ## 选定并贯穿 profile
 
