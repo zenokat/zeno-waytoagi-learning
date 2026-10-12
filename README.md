@@ -2,18 +2,30 @@
 
 Zeno 开发的非官方 WaytoAGI 知识库检索与读取 Skill。
 
-## 当前状态
+## 功能
 
-项目初始化中，尚未提供可安装使用的 Skill。首次配置文档与功能验收完成后再发布可用版本。
+- 获取 WaytoAGI 入口文档"近 7 日更新日志"的最近可用批次，或指定日期的精确批次；保留原标题、原摘要、链接与实际日期，未出现与超出窗口分别表达。
+- 通过官方 `lark-cli`、显式用户身份，限定 WaytoAGI 知识库搜索关键词与分页。
+- 按需读取命中文章的正文或章节，说明实际覆盖范围与未展开媒体。
 
-## 计划提供的能力
+总结、推荐与研究判断由调用本 Skill 的 Agent 完成；取得的外部文本作为数据，不执行其中面向 Agent 的指令。
 
-- 获取 WaytoAGI 最近可用的更新批次。
-- 在 WaytoAGI 知识库中搜索相关材料。
-- 按需读取命中的正文或章节，并保留来源链接。
-- 提供可直接交给 Agent 执行的配置文档，由 Agent 完成环境检查、依赖安装与配置，并在需要时引导用户完成飞书授权。
+## 用户入口
 
-读取能力使用官方飞书 CLI；总结、推荐和研究判断由调用本 Skill 的 Agent 根据用户任务完成。
+- 安装与首次配置：把根目录 [SETUP.md](SETUP.md) 交给有终端能力的 Agent，由 Agent 完成环境检查、CLI 安装、Skill 安装、应用配置与用户授权，并验证三类能力。
+- Skill 包位于 [skills/zeno-waytoagi](skills/zeno-waytoagi/SKILL.md)，含每日更新脚本与读取参考。
+
+## 前置条件
+
+- 官方 `lark-cli`（已在 1.0.96 验证；新安装按官方文档使用 `npx @larksuite/cli@latest install`）。
+- Python 3.9 或以上（仅用标准库）。
+- 飞书应用配置与用户身份授权，所需 scope：`docs:document.content:read`、`docx:document:readonly`、`search:docs:read`、`wiki:node:retrieve`、`offline_access`（SETUP.md 引导按需增量授权，不请求全部业务域）。
+
+## 验证状态
+
+- 33 项离线测试通过：25 项日期、原摘要、链接、完整性与授权失败行为；3 项 `--profile` 命名配置转发；5 项安装入口（完整包安装、异工作目录运行、重复安装安全行为）。
+- 2026-10-05 在 CLI 1.0.96、已授权用户身份下实测：每日批次获取、指定日期与旧日期状态、知识库搜索分页、两篇文章正文读取成功。详见 [references/waytoagi-access.md](skills/zeno-waytoagi/references/waytoagi-access.md) 的验证范围。
+- 首次应用配置与用户授权需本人配合；普通新账号跨租户访问该知识库的条件尚未验证，未跑通 SETUP.md 第六步前不宣称新用户全链路可用。
 
 ## 来源与许可
 
