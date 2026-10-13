@@ -52,10 +52,16 @@ Zeno 确认两项用户身份读取权限显示已开通。Agent 恢复同一会
 
 本轮交还控制权的环节是检查应用发布与可用范围：若无已发布版本，创建首次版本、将可用范围限定为用户本人并按页面要求提交发布；若已有发布版本，确认可用范围包含本人。需要反馈实际已发布、等待管理员审核或页面阻碍，不能仅凭权限“已开通”宣布应用接入完成。
 
+## 发布后：已观察到的第四段
+
+Zeno 确认应用已发布、可用范围包含本人。Agent 接续原会话，核对 CLI 初始化帮助及当前版本的密钥存储实现，说明 App Secret 应在官方 CLI 隐藏输入框填写，使用命名配置 `waytoagi`，凭证存储在 Skill 和 Git 之外。
+
+Agent 要求用户在同一环境的终端运行 `lark-cli config init --name waytoagi --lang zh`，选择使用已有应用、飞书平台，再填写 App ID 和隐藏输入的 App Secret。因为本次执行环境是容器，Echo 将其操作入口补为 Mac 终端里的 `docker exec -it --user setup-agent zeno-waytoagi-setup-20261013-01 lark-cli config init --name waytoagi --lang zh`，使安全输入落在容器内。没有将密钥接到聊天、命令参数或 Skill 文件里。
+
 ## 接续位置
 
-当前等待 Zeno 核对或完成发布并反馈实际状态。CLI 应用凭证接入、飞书用户授权和三个功能验证均未执行。
+当前等待 Zeno 在终端完成官方 CLI 的应用凭证输入并确认。尚未通过 CLI 核对新应用配置，未发起飞书用户授权，未验证三个功能。
 
-容器内 Agent 会话为 `01a1357a-0c5b-7b92-a9e3-8a7a0de687b8`，第三回合已正常结束并等待用户；仍沿用 [setup.md](../skills/zeno-waytoagi/setup.md) 接续。应用创建与两项权限开通由 Zeno 确认，Echo 尚未通过页面、App ID 或 API 独立核对。
+容器内 Agent 会话为 `01a1357a-0c5b-7b92-a9e3-8a7a0de687b8`，第四回合已正常结束并等待用户；仍沿用 [setup.md](../skills/zeno-waytoagi/setup.md) 接续。应用创建、两项权限开通与发布状态由 Zeno 确认，Echo 尚未通过页面、App ID 或 API 独立核对。
 
 本次仅代表 Linux 空白环境的一条真实路径，不能据此宣称 Mac、其他系统或所有异常分支均已验收。
