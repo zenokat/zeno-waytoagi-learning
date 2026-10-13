@@ -5,6 +5,7 @@ from datetime import date
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -183,6 +184,78 @@ class CliReadingTests(unittest.TestCase):
         self.assertEqual(run.call_count, 2)
         for call in run.call_args_list:
             self.assertNotIn("--profile", call.args[0])
+
+
+class DailyFailureTests(unittest.TestCase):
+    """验证用户环境和官方 CLI 失败时，实际命令仍给出可诊断结果，不暗中改变身份。"""
+
+    def assert_cli_failure(self, outcome, expected_reason):
+        """输入 CLI 返回值或异常及预期原因，执行 main 并验证失败 JSON；无返回值。"""
+        behavior = {"side_effect": outcome} if isinstance(outcome, Exception) else {"return_value": outcome}
+        output = io.StringIO()
+        with patch.object(DAILY.subprocess, "run", **behavior) as run, \
+                patch.object(sys, "argv", ["waytoagi_daily.py", "--profile", "test-profile"]), \
+                contextlib.redirect_stdout(output):
+            self.assertEqual(DAILY.main(), 2)
+        result = json.loads(output.getvalue())
+        self.assertEqual(result["status"], "error")
+        self.assertIn(expected_reason, result["error"])
+        self.assertNotIn("entries", result)
+        self.assertEqual(run.call_count, 1, "失败后不能自动登录、换配置或尝试匿名抓取")
+        arguments = run.call_args.args[0]
+        self.assertEqual(arguments[arguments.index("--profile") + 1], "test-profile")
+        self.assertEqual(arguments[arguments.index("--as") + 1], "user")
+
+    def test_missing_cli_has_actionable_failure(self):
+        """找不到官方 CLI 时返回明确依赖错误，而不是安装过程中无法理解的裸异常。"""
+        self.assert_cli_failure(FileNotFoundError(2, "No such file or directory", "lark-cli"), "CLI_NOT_FOUND")
+
+    def test_timeout_is_reported_without_extra_requests(self):
+        """读取超时返回稳定原因和失败状态，脚本自身不无限重试。"""
+        self.assert_cli_failure(subprocess.TimeoutExpired(["lark-cli"], 90), "CLI_TIMEOUT")
+
+    def test_service_failures_keep_reason_and_missing_scopes(self):
+        """模拟授权、缺权限、资源拒绝、限流及凭证存储错误，保留诊断并停止读取。"""
+        failures = [
+            ({"code": "NEED_USER_AUTHORIZATION", "message": "需要用户授权"}, "NEED_USER_AUTHORIZATION"),
+            ({"message": "缺少读取权限", "missing_scopes": ["docs:document.content:read"]}, "docs:document.content:read"),
+            ({"code": 131006, "message": "资源访问被拒绝"}, "131006"),
+            ({"code": 429, "message": "模拟限流"}, "429"),
+            ({"type": "internal", "subtype": "storage", "message": "keychain Get failed"}, "keychain Get failed"),
+        ]
+        for error, expected in failures:
+            with self.subTest(reason=expected):
+                response = subprocess.CompletedProcess([], 1, "", json.dumps({"ok": False, "error": error}))
+                self.assert_cli_failure(response, expected)
+
+    def test_non_json_diagnostics_are_not_exposed(self):
+        """CLI 输出未知格式时明确失败，不将可能含敏感信息的原始诊断回显给用户。"""
+        diagnostic = "SIMULATED_SENSITIVE_DIAGNOSTIC"
+        response = subprocess.CompletedProcess([], 1, "", diagnostic)
+        output = io.StringIO()
+        with patch.object(DAILY.subprocess, "run", return_value=response), \
+                patch.object(sys, "argv", ["waytoagi_daily.py"]), contextlib.redirect_stdout(output):
+            self.assertEqual(DAILY.main(), 2)
+        result = json.loads(output.getvalue())
+        self.assertEqual(result["status"], "error")
+        self.assertIn("CLI_FAILED", result["error"])
+        self.assertNotIn(diagnostic, output.getvalue())
+
+    def test_missing_timezone_data_returns_json_without_cli(self):
+        """真实新进程缺少时区库时，仍返回可修复的 JSON，不在模块导入时崩溃。"""
+        with tempfile.TemporaryDirectory() as empty_data:
+            environment = {**os.environ, "PYTHONTZPATH": empty_data}
+            # -S 排除已安装的 tzdata，空 PYTHONTZPATH 排除系统库，模拟新机器缺依赖。
+            process = subprocess.run(
+                [sys.executable, "-S", str(Path(DAILY.__file__))], env=environment,
+                capture_output=True, text=True, timeout=10,
+            )
+        self.assertEqual(process.returncode, 2)
+        result = json.loads(process.stdout)
+        self.assertEqual(result["status"], "error")
+        self.assertIn("TIMEZONE_DATA_MISSING", result["error"])
+        self.assertIn("tzdata", result["error"])
+        self.assertNotIn("Traceback", process.stderr)
 
 
 class DailyExtractionTests(unittest.TestCase):

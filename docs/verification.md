@@ -17,6 +17,8 @@ Skill 中的可执行读取路径必须有对应的用例并实际通过。CLI �
 | 关键词上下文及继续展开 | 联网 `test_keyword_returns_matching_local_context`、`test_keyword_context_can_expand_via_outline_section` 检查局部标记、实际命中及从目录定位章节后的继续读取。 |
 | 较早更新 | 联网 `test_historical_update_page_returns_older_dated_entries` 定位当前窗口之前的日期，读取该日原摘要和文档引用。 |
 | 命名配置转发 | 离线测试覆盖每日命令及两次底层请求；整组联网用例可携带同一 `WAYTOAGI_PROFILE` 复验真实配置。 |
+| 环境与 CLI 失败 | 离线 `DailyFailureTests` 覆盖缺 CLI、超时、授权/权限/资源/限流/凭证存储错误和非 JSON 响应；缺时区库用真实独立进程复现并验证错误 JSON。 |
+| 无命中与不合法读取目标 | 联网 `test_no_search_match_is_success_with_empty_results`、`test_unknown_profile_identifies_configuration_gap`、`test_missing_section_id_is_rejected` 区分空搜索、未配置和失效章节错误。 |
 
 离线用例见 [test_waytoagi_daily.py](../tests/test_waytoagi_daily.py)，联网用例见 [test_waytoagi_live.py](../tests/test_waytoagi_live.py)。
 
@@ -28,7 +30,7 @@ Skill 中的可执行读取路径必须有对应的用例并实际通过。CLI �
 python3 -m unittest discover -s tests -v
 ```
 
-默认执行 28 个离线用例，并明确跳过 11 个联网用例。跳过不等于联网验收通过。
+默认执行 33 个离线用例，并明确跳过 14 个联网用例。跳过不等于联网验收通过。
 
 在可访问系统钥匙串、已有有效飞书授权的环境中，单独运行联网验收：
 
@@ -42,6 +44,8 @@ WAYTOAGI_LIVE=1 python3 -m unittest discover -s tests -p test_waytoagi_live.py -
 
 2026-10-12，官方 CLI 1.0.96、已有飞书应用及用户授权：28 个离线用例通过，11 个联网用例通过；显式指定现有配置的整组读取也通过。
 
+2026-10-13，官方 CLI 1.0.96 补充异常验收：缺少时区数据时原脚本在导入阶段崩溃，现已改为返回失败 JSON 与补齐 `tzdata` 的提示；缺 CLI 和超时增加明确原因。33 个离线用例、14 个联网用例均通过，含无命中、未配置及失效章节的真实响应。
+
 创建时间筛选暂未纳入 Skill。实际请求接受时间参数，但搜索结果的创建时间均为 0，无法逐项核对日期窗口是否正确。待取得可检查的真实时间数据及对应范围用例后再加入。
 
-测试证明这里列出的读取路径及样本结果；不保证所有文档、账号和日期都可访问，也不验证其他平台外链或未展开媒体。结果整理、选择下一篇资料和遵循外部文本安全规则属于 Agent 的执行要求，不将这些要求冒充脚本测试覆盖。新应用配置、首次授权仍需单独验收。
+测试证明这里列出的读取路径及样本结果；不保证所有文档、账号和日期都可访问，也不验证其他平台外链或未展开媒体。[失败处理](../skills/zeno-waytoagi/references/failures.md)中的有界重试、用户授权接续和部分结果交付是 Agent 执行约定，不是脚本自动恢复能力，尚未完成实际用户交互验收。普通用户首次安装、应用配置、首次授权和跨租户资料访问仍需单独验收，不能仅凭本机与模拟失败测试宣称这些路径已通过。

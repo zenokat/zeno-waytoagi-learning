@@ -46,10 +46,21 @@ class WaytoagiLiveTests(unittest.TestCase):
             self.assertEqual(response.get("identity"), "user")
         return response
 
-    def search(self, *extra):
-        """输入额外筛选参数，执行文档中的同库 ComfyUI 搜索，返回业务 data。"""
+    def failed_cli(self, arguments):
+        """输入预期失败的只读 CLI 参数，确认退出码和失败 JSON，并返回错误对象。"""
+        if self.profile and "--profile" not in arguments:
+            arguments = [*arguments, "--profile", self.profile]
+        process = subprocess.run(["lark-cli", *arguments], capture_output=True, text=True, timeout=90)
+        self.assertNotEqual(process.returncode, 0)
+        response = json.loads(process.stdout or process.stderr)
+        self.assertIs(response.get("ok"), False)
+        self.assertIsInstance(response.get("error"), dict)
+        return response["error"]
+
+    def search(self, *extra, query="ComfyUI"):
+        """输入关键词与额外筛选参数，执行文档中的限定知识库搜索，返回业务 data。"""
         return self.run_json([
-            "lark-cli", "drive", "+search", "--query", "ComfyUI",
+            "lark-cli", "drive", "+search", "--query", query,
             "--space-ids", SPACE_ID, "--as", "user", "--page-size", "5",
             "--format", "json", *extra,
         ])["data"]
@@ -141,6 +152,32 @@ class WaytoagiLiveTests(unittest.TestCase):
         for result in results:
             title = re.sub(r"<[^>]+>", "", result["title_highlighted"])
             self.assertIn("comfyui", title.lower())
+
+    def test_no_search_match_is_success_with_empty_results(self):
+        """罕见关键词无命中时，确认是成功的空搜索，而不是授权或服务失败。"""
+        data = self.search(query="zenowaytoagizero7f92d4")
+        self.assertEqual(data["results"], [])
+        self.assertFalse(data["has_more"])
+
+    def test_unknown_profile_identifies_configuration_gap(self):
+        """不存在的配置明确报告未配置，不将它当作读取成功或重新授权的理由。"""
+        error = self.failed_cli([
+            "drive", "+search", "--query", "ComfyUI", "--space-ids", SPACE_ID,
+            "--as", "user", "--profile", "zeno-waytoagi-missing-profile-test",
+        ])
+        self.assertEqual(error.get("type"), "config")
+        self.assertEqual(error.get("subtype"), "not_configured")
+        self.assertIn("zeno-waytoagi-missing-profile-test", error["message"])
+
+    def test_missing_section_id_is_rejected(self):
+        """失效章节 ID 返回具体错误，不以其他章节或全篇替代用户要读的范围。"""
+        error = self.failed_cli([
+            "docs", "+fetch", "--doc", ARTICLE, "--as", "user", "--scope", "section",
+            "--start-block-id", "zeno-waytoagi-missing-block-test",
+            "--doc-format", "markdown", "--detail", "simple",
+        ])
+        self.assertEqual(str(error.get("code")), "12320000")
+        self.assertIn("start_block_id", error["message"])
 
     def test_full_article_contains_multiple_sections_and_body(self):
         """全文必须包含至少两个实际章节的正文，且不是目录、节选或局部响应。"""

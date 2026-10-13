@@ -12,15 +12,25 @@ from pathlib import Path
 import re
 import subprocess
 import sys
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from xml.etree import ElementTree
 
 
 SOURCE_URL = "https://waytoagi.feishu.cn/wiki/QPe5w5g7UisbEkkow8XcDmOpn8e"
 SOURCE_DOCUMENT_ID = "NDsAdX4spozsglxgqm7caJqdnVf"
 SECTION = "近 7 日更新日志"
-TIMEZONE = ZoneInfo("Asia/Singapore")
 INLINE_TAGS = {"cite", "a", "b", "i", "u", "s", "strong", "em", "code", "span", "br"}
+
+
+def reading_timezone():
+    """无参数，返回来源使用的时区；缺数据时给出恢复提示，不替换为机器当地时区。
+
+    延后到 main 的错误处理范围内加载，避免新机器缺时区数据时在导入阶段崩溃。
+    """
+    try:
+        return ZoneInfo("Asia/Singapore")
+    except ZoneInfoNotFoundError as error:
+        raise ValueError("TIMEZONE_DATA_MISSING: 请在运行此脚本的 Python 环境补齐 tzdata，再重试") from error
 
 
 def run_cli(arguments):
@@ -29,9 +39,14 @@ def run_cli(arguments):
     stdout 为业务结果，stderr 可能是结构化错误或普通诊断。只保留错误码、
     消息及缺失权限，不回显任意诊断，也不启动授权或其他读取路线。
     """
-    process = subprocess.run(
-        ["lark-cli", *arguments], capture_output=True, text=True, timeout=90, check=False,
-    )
+    try:
+        process = subprocess.run(
+            ["lark-cli", *arguments], capture_output=True, text=True, timeout=90, check=False,
+        )
+    except FileNotFoundError as error:
+        raise ValueError("CLI_NOT_FOUND: 请按 setup.md 准备官方 lark-cli，并确认当前执行环境可找到命令") from error
+    except subprocess.TimeoutExpired as error:
+        raise ValueError("CLI_TIMEOUT: 官方读取超过 90 秒；检查网络或服务状态后，按失败处理约定重试") from error
     response = None
     for output in (process.stdout, process.stderr):
         try:
@@ -184,7 +199,7 @@ def fetch_cli_section(profile=None):
     if len(headings) != 1 or not headings[0].get("id"):
         raise ValueError("SECTION_NOT_FOUND: CLI 目录无法唯一定位近 7 日更新日志")
     response = run_cli([*common, "--scope", "section", "--start-block-id", headings[0].get("id"), "--detail", "full"])
-    return document_from_cli(response, datetime.now(TIMEZONE).isoformat())
+    return document_from_cli(response, datetime.now(reading_timezone()).isoformat())
 
 
 def extract_daily(document, target_date=None):
@@ -206,7 +221,7 @@ def extract_daily(document, target_date=None):
     fetched_at = datetime.fromisoformat(document["fetched_at"].replace("Z", "+00:00"))
     if fetched_at.tzinfo is None:
         raise ValueError("INVALID_TIMESTAMP: 抓取时间缺少时区")
-    fetched_date = fetched_at.astimezone(TIMEZONE).date()
+    fetched_date = fetched_at.astimezone(reading_timezone()).date()
     if target_date is not None and target_date > fetched_date:
         raise ValueError("FUTURE_DATE: 目标日期晚于本次抓取日期")
     batches = []
@@ -295,6 +310,7 @@ def main():
     parser.add_argument("--profile", help="官方 CLI 命名配置名；省略时使用默认配置")
     args = parser.parse_args()
     try:
+        reading_timezone()
         if args.input:
             response = json.loads(args.input.read_text())
             document = document_from_cli(response, response["fetched_at"])
