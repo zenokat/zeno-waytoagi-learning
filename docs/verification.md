@@ -17,7 +17,7 @@ Skill 中的可执行读取路径必须有对应的用例并实际通过。CLI �
 | 关键词上下文及继续展开 | 联网 `test_keyword_returns_matching_local_context`、`test_keyword_context_can_expand_via_outline_section` 检查局部标记、实际命中及从目录定位章节后的继续读取。 |
 | 较早更新 | 联网 `test_historical_update_page_returns_older_dated_entries` 定位当前窗口之前的日期，读取该日原摘要和文档引用。 |
 | 命名配置转发 | 离线测试覆盖每日命令及两次底层请求；整组联网用例可携带同一 `WAYTOAGI_PROFILE` 复验真实配置。 |
-| 环境与 CLI 失败 | 离线 `DailyFailureTests` 覆盖缺 CLI、超时、授权/权限/资源/限流/凭证存储错误和非 JSON 响应；缺时区库用真实独立进程复现并验证错误 JSON。 |
+| 脚本对环境与 CLI 失败的报告 | 离线 `DailyFailureTests` 覆盖缺 CLI、超时、授权/权限/资源/限流/凭证存储错误和非 JSON 响应下的原因保留与退出行为；缺时区库用真实独立进程复现并验证错误 JSON。不验证 CLI 内部授权或故障恢复流程。 |
 | 无命中与不合法读取目标 | 联网 `test_no_search_match_is_success_with_empty_results`、`test_unknown_profile_identifies_configuration_gap`、`test_missing_section_id_is_rejected` 区分空搜索、未配置和失效章节错误。 |
 
 离线用例见 [test_waytoagi_daily.py](../tests/test_waytoagi_daily.py)，联网用例见 [test_waytoagi_live.py](../tests/test_waytoagi_live.py)。
@@ -50,4 +50,8 @@ WAYTOAGI_LIVE=1 python3 -m unittest discover -s tests -p test_waytoagi_live.py -
 
 创建时间筛选暂未纳入 Skill。实际请求接受时间参数，但搜索结果的创建时间均为 0，无法逐项核对日期窗口是否正确。待取得可检查的真实时间数据及对应范围用例后再加入。
 
-测试证明这里列出的读取路径及样本结果；不保证所有文档、账号和日期都可访问，也不验证其他平台外链或未展开媒体。[失败处理](../skills/zeno-waytoagi/references/failures.md)中的有界重试、用户授权接续和部分结果交付是 Agent 执行约定，不是脚本自动恢复能力。本次首次配置覆盖了新应用接入、用户授权确认后的接续和三项实际读取；没有覆盖所有恢复分支、其他安装环境或普通新账号的访问条件。不能将这一条成功路径写成完整异常与边界验收。
+测试证明这里列出的读取路径及样本结果；不保证所有文档、账号和日期都可访问，也不验证其他平台外链或未展开媒体。[失败处理](../skills/zeno-waytoagi/references/failures.md)中的有界重试与部分结果交付是 Agent 执行约定，不是脚本自动恢复能力。CLI 的配置、授权与通用故障恢复由 [setup.md](../skills/zeno-waytoagi/setup.md) 路由到上游，不列为本 Skill 需要逐项覆盖的内部流程。
+
+2026-10-14 的路由改稿已在 CLI 1.0.97 确认 `lark-cli skills read lark-shared` 可返回配置、身份与权限参考索引；改稿后的完整 Agent setup 尚未重跑。此前首次配置覆盖了新应用接入、用户授权确认后的接续和三项实际读取，没有覆盖本产品职责内的所有分支、其他安装环境或普通新账号的访问条件，不能写成完整异常与边界验收。
+
+同日检查 setup 对其他文档的影响并统一路由与测试职责说明。修改前后均为 33 个离线用例通过、14 个联网用例跳过；13 份 Markdown 的本地文件链接与 diff 检查通过。脚本与测试代码未变，未新增覆盖项通过的声明。

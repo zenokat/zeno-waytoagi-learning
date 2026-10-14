@@ -23,7 +23,7 @@ https://github.com/zenokat/zeno-waytoagi/tree/main/skills/zeno-waytoagi
 请读取 Skill 内的 setup.md，检查环境、准备依赖、完成飞书配置，并验证三个主要功能。需要我授权时，请告诉我具体怎么操作。
 ```
 
-Agent 会自行安装完整 Skill，并参考 [setup.md](skills/zeno-waytoagi/setup.md) 完成配置。已有飞书应用和授权可以复用，必要时你按提示完成飞书授权即可。
+Agent 会自行安装完整 Skill，并参考 [setup.md](skills/zeno-waytoagi/setup.md) 完成配置。已有飞书应用和授权可以复用；需要你配合时，优先通过官方链接或二维码在浏览器完成操作。
 
 当前版本仍在本地打磨，尚未上传 GitHub。现在验收时，把本地仓库目录交给 Agent；上述 GitHub 安装入口在发布后可用。
 
