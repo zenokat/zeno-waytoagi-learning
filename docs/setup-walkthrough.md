@@ -58,10 +58,20 @@ Zeno 确认应用已发布、可用范围包含本人。Agent 接续原会话，
 
 Agent 要求用户在同一环境的终端运行 `lark-cli config init --name waytoagi --lang zh`，选择使用已有应用、飞书平台，再填写 App ID 和隐藏输入的 App Secret。因为本次执行环境是容器，Echo 将其操作入口补为 Mac 终端里的 `docker exec -it --user setup-agent zeno-waytoagi-setup-20261013-01 lark-cli config init --name waytoagi --lang zh`，使安全输入落在容器内。没有将密钥接到聊天、命令参数或 Skill 文件里。
 
+## 2026-10-14：实际一键流程与此前引导的差异
+
+Zeno 实际选择“一键配置应用（推荐）”和飞书，随后打开 CLI 输出的二维码或 URL，在浏览器页面中选择已有应用、选中刚创建的阅读助手，页面与终端均返回成功；没有走此前要求手动填写 App ID 和 App Secret 的路线。
+
+Echo 读取 Agent 第四轮最终消息，确认手动凭证指引是容器 Agent 原话，Echo 仅补充 Docker 入口；同时承担未充分审核路线便转交的责任。核对 [CLI 1.0.97 交互源码](https://github.com/larksuite/cli/blob/v1.0.97/cmd/config/init_interactive.go)，两条路径均存在。其[面向 Agent 的首次配置说明](https://github.com/larksuite/cli/blob/v1.0.97/skills/lark-shared/references/lark-shared-config-init.md)明确要求后台发起配置流程，转发官方链接及二维码，由用户完成浏览器操作。正常本机 Agent 可以自行启动并等待这一流程；Docker 入口只是本次隔离实验的额外适配。
+
+只读核对确认容器已存在有效的 `waytoagi` 飞书应用配置。过滤凭证字段后检查授权状态，用户身份为 `missing`，不能把应用接入成功写成用户授权或完整 setup 成功。未发起新的授权，未读取业务资料。
+
+本轮证据支持“接入已有应用不必手抄密钥”；尚未从零走一键新建应用，不能据此宣称此前的创建、权限及发布步骤都能省去，也未核对一键配置是否改变权限范围。建议后续共同决定浏览器优先、手动输入作为有明确原因的备选，以及交互说明需依据实际 CLI 输出等体验约定；这些建议尚未写入生产 setup 或确认为产品默认。
+
 ## 接续位置
 
-当前等待 Zeno 在终端完成官方 CLI 的应用凭证输入并确认。尚未通过 CLI 核对新应用配置，未发起飞书用户授权，未验证三个功能。
+应用配置已接入，用户身份尚未授权，三个功能均未在新配置下验证。当前先讨论实际交互与引导差异。
 
-容器内 Agent 会话为 `01a1357a-0c5b-7b92-a9e3-8a7a0de687b8`，第四回合已正常结束并等待用户；仍沿用 [setup.md](../skills/zeno-waytoagi/setup.md) 接续。应用创建、两项权限开通与发布状态由 Zeno 确认，Echo 尚未通过页面、App ID 或 API 独立核对。
+容器内 Agent 会话为 `01a1357a-0c5b-7b92-a9e3-8a7a0de687b8`，仍停在第四轮结束处，尚未收到这次一键配置的反馈。后续沿用 [setup.md](../skills/zeno-waytoagi/setup.md) 接续。创建、权限开通与发布状态来自 Zeno 的明确反馈；应用接入及缺少用户身份已由 CLI 独立核对。
 
 本次仅代表 Linux 空白环境的一条真实路径，不能据此宣称 Mac、其他系统或所有异常分支均已验收。
