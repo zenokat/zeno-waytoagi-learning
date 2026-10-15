@@ -175,6 +175,13 @@ class WaytoagiLiveTests(unittest.TestCase):
         self.assertEqual(data["results"], [])
         self.assertFalse(data["has_more"])
 
+    def test_thirty_character_query_is_accepted(self):
+        """30个英文或中文字符在声明边界内；执行真实搜索并确认成功，不要求必须命中。"""
+        for query in ["z" * 30, "测" * 30]:
+            with self.subTest(query=query):
+                data = self.search(query=query)
+                self.assertIsInstance(data["results"], list)
+
     def test_unknown_profile_identifies_configuration_gap(self):
         """不存在的配置明确报告未配置，不将它当作读取成功或重新授权的理由。"""
         error = self.failed_cli([

@@ -13,6 +13,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 from xml.sax.saxutils import escape
+from zoneinfo import TZPATH
 
 
 SPEC = importlib.util.spec_from_file_location("waytoagi_daily", Path(__file__).parents[1] / "skills" / "zeno-waytoagi" / "scripts" / "waytoagi_daily.py")
@@ -256,6 +257,30 @@ class DailyFailureTests(unittest.TestCase):
         self.assertIn("TIMEZONE_DATA_MISSING", result["error"])
         self.assertIn("tzdata", result["error"])
         self.assertNotIn("Traceback", process.stderr)
+
+    def test_restoring_timezone_data_recovers_in_the_same_python(self):
+        """同一解释器缺时区先失败，补回新加坡数据后成功，日期仍按来源时区解释。"""
+        timezone_file = next((Path(root) / "Asia/Singapore" for root in TZPATH
+                              if (Path(root) / "Asia/Singapore").is_file()), None)
+        self.assertIsNotNone(timezone_file, "此恢复验收需要现有系统时区文件作为外部输入")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "section.json"
+            source.write_text(json.dumps(cli_response_with_batches(["9 月 5 日"])))
+            environment = {**os.environ, "PYTHONTZPATH": str(root / "timezone")}
+            command = [sys.executable, "-S", str(Path(DAILY.__file__)), "--date", "2026-09-05", "--input", str(source)]
+            missing = subprocess.run(command, env=environment, capture_output=True, text=True, timeout=10)
+            self.assertEqual(missing.returncode, 2)
+            self.assertIn("TIMEZONE_DATA_MISSING", json.loads(missing.stdout)["error"])
+            target = root / "timezone/Asia/Singapore"
+            target.parent.mkdir(parents=True)
+            target.write_bytes(timezone_file.read_bytes())
+            restored = subprocess.run(command, env=environment, capture_output=True, text=True, timeout=10)
+        self.assertEqual(restored.returncode, 0)
+        result = json.loads(restored.stdout)
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["timezone"], "Asia/Singapore")
+        self.assertEqual(result["target_date"], "2026-09-05")
 
 
 class DailyExtractionTests(unittest.TestCase):

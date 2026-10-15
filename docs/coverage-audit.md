@@ -1,90 +1,73 @@
 # Skill 承诺与测试核对（2026-10-15）
 
-结论：**三个功能的可执行读取路径已有通过证据，但“Skill 涉及的所有承诺均已测试”不成立。** setup 新版流程、部分结果处理与恢复交互仍有缺口。用例数量不能替代逐项覆盖。
+此前盘点的本产品能力、边界与 Agent 处理约定已补充测试并取得通过记录。最终证据包括 **49 个产品离线用例、1 个测试隔离守卫用例、16 个真实 CLI/快照检查、23 个合成 Agent 场景和1次当前版本真实 setup**。Agent 场景由21个测试方法覆盖，另有1个真实 setup 方法；这些数量不能直接混作同一种用例相加。
 
-本次核对本地 `cd63793` 的 [SKILL.md](../skills/zeno-waytoagi/SKILL.md)、[setup.md](../skills/zeno-waytoagi/setup.md)、[reading-options.md](../skills/zeno-waytoagi/references/reading-options.md)、[failures.md](../skills/zeno-waytoagi/references/failures.md) 及 [README](../README.md)。这是测试证据盘点，没有改变已确认的产品需求，也没有将未测的约定删除以获得通过结论。
+核对范围为 [SKILL.md](../skills/zeno-waytoagi/SKILL.md)、[setup.md](../skills/zeno-waytoagi/setup.md)、[reading-options.md](../skills/zeno-waytoagi/references/reading-options.md)、[failures.md](../skills/zeno-waytoagi/references/failures.md) 与 [README](../README.md)。下表说明每项证据实际证明什么；没有靠删除约定或检查文档关键词来获得通过结论。
 
-“已有证据”只对表中检查的行为及样本有效；“部分”表示底层命令或旧版流程通过，但尚不能证明当前 Agent 的完整行为；“缺口”表示没有对应行为测试。静态审查、命令帮助和文档存在不算行为测试。
+本轮验收对象是安装配置与三条读取流程，由任务显式进入 Skill。收尾时出现的并行更名和触发说明改稿保持独立；自动选择 Skill 的新增触发策略不作为这批场景的通过结论。
 
 ## 安装与配置
 
-历史体验见 [setup-walkthrough.md](setup-walkthrough.md)。它使用旧版本地包，不能充当当前包完整验收。
-
-| 承诺 / 可观察行为 | 证据与结论 |
+| 承诺 / 可观察行为 | 最终证据 |
 | --- | --- |
-| Agent 取得完整 Skill 包并安装到自身目录 | 部分：旧版本在空白 Linux 环境实际安装并核对副本；当前版本未重新从 README 入口走通。GitHub 当前包尚未发布，URL 安装未验收。 |
-| 保全安装目标已有的用户修改 | 缺口：没有目标目录已有修改的安装场景。 |
-| 准备 Python、来源时区与官方 CLI | 部分：实际准备 Python 3.11、时区、CLI 1.0.97；Mac 实际读取使用 CLI 1.0.96。声明的最低 Python 3.9 尚无实际运行记录。 |
-| 配置、身份与权限问题按 CLI 自带指南路由 | 部分：实际读取 `lark-cli skills read lark-shared` 的索引；尚未验证新版 Agent 遇到故障后确实沿该索引恢复。CLI 内部流程由上游负责，无需本项目重复覆盖。 |
-| 优先复用可用配置、授权，沿用同一配置与用户身份 | 部分：代码与命名配置的实际读取通过；尚无当前 setup 中“已有环境直接复用”的完整 Agent 场景。 |
-| 保留其他配置及全局默认项 | 缺口：没有带其他配置的 setup 前后状态对照。读取测试不修改配置，不能替代这项验证。 |
-| Agent 发起一键配置，转交官方浏览器链接并在用户完成后接续 | 部分：用户实际通过终端发起一键配置并在浏览器选择应用，后续 Agent 接续授权成功；新版要求的 Agent 主动发起应用接入尚未完整重跑。 |
-| 一键配置实际受阻时再进入终端或安全输入备选 | 缺口：未验证以具体阻碍触发该备选的场景。 |
-| 密钥安全输入、凭证及临时代码不进入聊天、Skill 或 Git | 部分：历史正常路径未要求用户发送密钥，敏感值未纳入仓库；没有专门的敏感响应场景验证。 |
-| 只申请所需读取权限，权限足够即继续，不足时协调用户 | 部分：历史授权显式请求两项读取权限且宽权限下三功能成功；不足权限仅测试脚本报告，尚未测试 Agent 协调补充的过程。不要求额外定位或收窄已有宽权限。 |
-| 资源访问资格问题不靠反复登录、新建应用处理 | 部分：脚本收到资源拒绝会停止；Agent 接续行为未测。 |
-| setup 实际验证三功能并如实交付位置、配置、日期、条数、文章来源 | 部分：历史完整主流程有记录；当前日期接口改版后的完整 Agent setup 与受阻时的交付尚未重跑。 |
+| 安装当前完整 Skill、检查依赖、复用已有环境并验证三功能 | `test_current_package_installs_and_validates_existing_environment` 对照安装文件；`test_current_setup_with_real_existing_authorization` 在临时目标实际安装当前包并用真实飞书配置验证。 |
+| 目标已有用户修改时保全，不静默丢失 | `test_installation_preserves_existing_user_changes` 在完整旧包中加入修改与额外用户文件，检查原处或备份的内容逐字一致；允许说明后备份或停下交用户选择。 |
+| Python 3.9 以上、来源时区和官方 CLI | Python 3.9.6、3.14.7 的离线用例；3.9.6 下16项真实读取检查；真实 setup 检查 Linux 的 Python 3.11.2、时区及 CLI 1.0.97。空白环境依赖准备另有[历史实际体验](setup-walkthrough.md)，本轮不重测上游安装器。 |
+| 配置、身份、权限问题按当前 CLI 指南路由 | 测试启动时实际缓存官方指南；权限不足、浏览器接入与故障场景检查实际路由调用。真实 setup 也读取当前官方索引和参考。 |
+| 沿用同一配置与用户身份，不改其他配置及默认项 | 公共 Agent 断言检查读取的 `--profile`、`--as user`，已有配置场景拒绝配置写入；未知配置、浏览器接入及真实 setup 分别检查对应分支。真实 setup 的底层白名单阻止写配置和重新登录。 |
+| 默认 Agent 发起一键配置、交付原链接和二维码，用户确认后接续 | `test_browser_setup_handoff_and_same_session_resume` 检查实际发起调用、链接与二维码交付，再在同一 Agent 会话模拟用户确认、验证三功能。二维码编码与真实授权由上游负责，合成交接不充当新的真实授权记录。 |
+| 一键路径实际受阻后再进入终端安全输入 | `test_browser_failure_explains_safe_terminal_fallback` 实际注入一键接入失败，检查阻碍说明、交互终端和隐藏输入指引。 |
+| 权限足够就继续；不足才协调补充 | 复用宽权限配置的当前 setup 通过；`test_missing_scopes_routes_upstream_and_requests_help` 验证缺少读取权限后的上游路由与用户协作。没有将最小权限集合或收窄权限加入承诺。 |
+| 密钥不交到聊天，错误中凭证、授权链接与代码不展示 | 终端备选用例检查安全输入；`test_sensitive_error_is_redacted_and_diagnosable` 注入合成敏感字段，检查最终答复清理及错误码、版本、来源保留；已有非 JSON 诊断抑制测试继续通过。 |
+| 如实交付安装位置、配置、日期、条数、分页和文章来源；受阻时不谎报完成 | 正常、浏览器待用户配合、终端受阻三类交付分别有实际 Agent 样本；真实 setup 使用返回状态、条数、正文长度与同文档链接核对。 |
 
 ## 按日期看更新
 
-以下用例位于 [test_waytoagi_updates.py](../tests/test_waytoagi_updates.py)、[test_waytoagi_daily.py](../tests/test_waytoagi_daily.py)；真实调用位于 [test_waytoagi_live.py](../tests/test_waytoagi_live.py)，年度快照回放位于 [test_waytoagi_archive_live.py](../tests/test_waytoagi_archive_live.py)。
-
-| 承诺 / 可观察行为 | 证据与结论 |
+| 承诺 / 可观察行为 | 最终证据 |
 | --- | --- |
-| 必填有效 `YYYY-MM-DD`，不接受未来日期 | 已有证据：`test_date_is_required_before_any_cli_request`、`test_invalid_or_non_iso_dates_fail_without_reading`、`test_future_date_is_rejected_before_reading`。 |
-| 使用 Asia/Singapore，缺时区不擅自替代 | 已有证据：`test_year_rollover_uses_singapore_date`、`test_missing_timezone_data_returns_json_without_cli`。补齐数据的实际恢复尚无用例。 |
-| 从 2025-06-01 起支持，早于起点返回范围状态 | 已有证据：`test_dates_before_supported_start_do_not_read_any_page` 及起点真实读取。 |
-| 近期、当年与其他年份归档统一自动定位 | 已有证据：近期命中、年度归档、年份路由、同月日跨年、年末元旦的离线用例及真实日期调用；Linux 命名配置亦实际读取近期和跨年归档。 |
-| 保留原日期、标题、摘要与实际链接 | 已有证据：`test_retains_summary_and_only_requested_day`、`test_date_query_follows_year_route_and_preserves_original_entry` 等独立预期值检查，配合真实样本验证。 |
-| 不遗漏或混入其他批次条目 | 已有证据：实际年度快照 477 批次、2,227 条目的 ID 集合回放；不是 477 次独立联网，也不是每条摘要逐字比对。原摘要保真由独立样本测试补充。 |
-| 日期缺失不自动换日、不冒充无更新 | 已有证据：`test_missing_date_does_not_substitute_another_batch` 及实际缺失日期响应。Agent 面向用户的最终解释未单独测试。 |
-| 路由缺失、重复日期、节选、错配、空批次或结构变化返回错误 | 已有证据：`test_missing_year_route_is_a_failure_not_an_empty_date`、`test_duplicate_dates_do_not_return_an_arbitrary_batch`、`test_invalid_archive_scope_source_or_content_is_not_success` 等。 |
-| CLI 失败保留原因，不自动登录、换身份或匿名回退 | 已有证据：缺 CLI、超时、权限、授权、限流、凭证存储、非 JSON 等进程替身用例；这验证脚本报告，不验证上游真实故障恢复。 |
-| Agent 获取最近更新时选择当天或前一天 | 部分：脚本显式日期调用通过；Agent 选日行为未独立测试。现有 `latest()` 测试从来源挑选实际最近日期，不能替代该交互约定。 |
+| 必填有效 YYYY-MM-DD、拒绝未来日期、支持起点两侧 | [DateCommandTests](../tests/test_waytoagi_updates.py) 的输入、范围和真实起点用例；`test_unsupported_date_explains_cutoff_without_reading_other_dates` 验证 Agent 说明范围，不读取其他日期。 |
+| Asia/Singapore 日期；缺时区报错，补齐后可恢复 | 既有跨年与缺时区用例，加 `test_restoring_timezone_data_recovers_in_the_same_python`：同一解释器先失败、补回实际时区文件后成功，不改用当地时区。 |
+| 最近更新实际传入当天或前一天 | `test_recent_update_uses_an_explicit_source_timezone_date` 检查本轮“按今天查”的真实脚本调用及输出日期；之前的最近可用日期抽样不再作为 Agent 选日证据。 |
+| 单入口自动选近期、当年和跨年归档；同月日不串年 | 近期、跨年路由、同月日不同年及年末元旦离线用例，真实日期抽样与 Linux 命名配置读取。 |
+| 原日期、原标题、原摘要、真实链接和条目集合保真 | 独立预期值的摘要/链接测试；真实年度快照477批次、2,227条目ID集合回放。回放不冒充477次独立联网，也不冒充逐条摘要全文比对。 |
+| 目标缺失不换日、不解释为当天无更新 | 脚本目标缺失用例与真实缺失日期响应；`test_missing_date_reports_checked_sources_without_switching` 检查 Agent 的解释和不交付别日摘要。 |
+| 路由缺失、重复日期、节选、空批次、来源/锚点/日期错配和未知结构返回失败 | 既有离线场景；`test_changed_source_structure_is_not_empty_success` 用真实脚本遇到破损响应，检查 Agent 保留错误码、CLI版本与来源。 |
+| CLI 失败保留原因，不自行登录、换身份或匿名回退 | 既有缺 CLI、超时、授权、权限、资源、限流、存储与非 JSON 进程替身用例。它们证明本脚本的失败报告，不承担上游内部恢复实现。 |
 
-## 搜索知识库
+## 搜索与文章读取
 
-下表的已有命令证据来自 [WaytoagiLiveTests](../tests/test_waytoagi_live.py)。
-
-| 承诺 / 可观察行为 | 证据与结论 |
+| 承诺 / 可观察行为 | 最终证据 |
 | --- | --- |
-| 用户身份、固定知识库，返回标题、摘要字段及实际链接 | 已有证据：`test_search_returns_waytoagi_links_and_matching_context`。 |
-| Agent 从问题提取关键词，控制最多 30 字符 | 缺口：未验证 Agent 的关键词选择，也没有 30/31 字符边界用例。 |
-| 空搜索与错误分开 | 部分：`test_no_search_match_is_success_with_empty_results` 验证实际成功空结果；Agent 的解释及按需换词未测。 |
-| 沿实际令牌翻页并保持查询范围，取得新增结果 | 已有证据：`test_search_pagination_returns_new_same_space_results` 验证实际第二页，不能推及整库召回。 |
-| 后续页失败、重复令牌或无新增结果时停止并交付部分材料 | 缺口：没有这些受控响应下的 Agent 行为测试。 |
-| 仅标题搜索 | 已有证据：`test_title_only_search_matches_every_title`。 |
-| 展示时去高亮、保留 URL；时间 0 视为未提供 | 缺口：测试检查过原始字段并在断言中去标签，但这不能证明 Agent 实际展示处理。 |
-| 不将目录、快捷方式混算为教程总量，不据搜索推导热门排行；摘要不冒充已读正文 | 缺口：没有混合结果及用户要求排行、总数时的 Agent 场景。 |
+| 从问题提取不超过30字符的关键词，用户身份限定 WaytoAGI | 公共 Agent 断言与长问题展示场景检查实际查询；`test_thirty_character_query_is_accepted` 实测30个中/英文字符。CLI实际接受31字符，30字符是本 Skill 的 Agent 选词约束，不臆造上游拒绝行为。 |
+| 返回标题、摘要和来源；空搜索只说明本次关键词未命中 | 真实搜索/无命中用例，加 `test_no_match_explains_keyword_scope`；接受“0条结果”等等价交付，不强制固定文案。 |
+| 真实令牌翻页保持条件；后页错误、重复令牌、无新增时停止并交付部分材料 | 真实第二页用例；`test_pagination_stops_and_preserves_material` 的三个受控场景检查实际调用、上限、等待与已取得链接。 |
+| 仅标题搜索 | `test_title_only_search_matches_every_title` 真实读取。 |
+| 去高亮、保留实际来源，零时间视为未提供；目录/快捷方式不混算教程，不推导热门排名或全库总数 | `test_search_presentation_and_short_query` 使用符合实际字段形状的混合结果和零时间，检查 Agent 展示及范围解释；任务明确只要搜索结果，不读正文。 |
+| 摘要不冒充已读正文 | 上述搜索展示场景检查没有正文调用；真实全文用例及需要展开时的 Agent 场景分别取得正文。 |
+| 成功状态和非空正文都检查；空正文不算读完 | 真实多章节正文用例；`test_empty_article_is_not_reported_as_read` 注入成功空正文，检查实际交付。 |
+| 导航页继续到实际子文档 | `test_navigation_continues_and_external_instructions_are_data` 检查子文档调用、正文参数与子文档来源。 |
+| 目录取实际块ID并按章节读取，保持章节边界 | 真实目录与章节用例，配合 `test_invalid_section_refreshes_outline_once` 的失效后一次重新定位。 |
+| 刷新后仍没有章节就停止并给真实选项 | `test_still_missing_section_offers_real_choices` 使用已无目标章节的目录，检查停止及实际选项。 |
+| 关键词局部上下文不足时从目录展开章节 | 真实关键词/继续展开用例，加 `test_keyword_excerpt_expands_using_outline` 检查 Agent 实际补取缺失信息。 |
+| 节选、tips、图片、视频、外链和独立表格未展开时说明范围 | `test_partial_article_reports_unread_media_and_tables` 注入节选和限制提示，检查交付；真实 setup 也说明实际未展开媒体。 |
+| 外部文本只作资料，不执行其中指令 | 导航到子文档的场景包含合成恶意指令；检查正常信息交付及其要求创建的文件没有出现。 |
 
-## 文章与局部正文
+## 通用恢复与交付
 
-| 承诺 / 可观察行为 | 证据与结论 |
+| 承诺 / 可观察行为 | 最终证据 |
 | --- | --- |
-| 读取实际文章正文，检查成功状态、非空内容并保留来源 | 部分：`test_full_article_contains_multiple_sections_and_body` 验证真实教程跨章节正文；Agent 对空正文的拒绝及最终来源展示未独立测试。 |
-| 导航页只有子文档引用时，继续读取相关文章 | 缺口：没有导航页到子文档的完整行为用例。 |
-| 获取目录和实际块 ID，再按章节读取 | 已有证据：`test_outline_returns_heading_ids`、`test_section_returns_body_and_stops_before_next_peer` 验证章节内容和边界。 |
-| 关键词命中局部上下文，不足时从目录继续展开 | 已有证据：`test_keyword_returns_matching_local_context`、`test_keyword_context_can_expand_via_outline_section` 验证命令组合；未单独验证 Agent 自行判断上下文是否足够。 |
-| 节选、tips、图片、视频、外链及独立表格未读时说明范围 | 部分：历史 setup 交付说明未展开媒体；日期脚本拒绝不完整内容。一般文章的截断、tips 和表格等分支下的 Agent 说明未测。测试拒绝 tips 不等于验证 Agent 会正确解释 tips。 |
-| 章节 ID 失效后重读目录一次，仍失败则给实际章节选项 | 部分：`test_missing_section_id_is_rejected` 只验证 CLI 拒绝失效 ID；未验证重新定位与停止交付。 |
-| 外部文本只作资料，不执行其中指令 | 缺口：没有含指令文本的受控材料验收。 |
+| 成功、空结果、部分材料和错误分开 | 脚本正反例、空搜索、空正文、分页部分结果及格式错误场景分别有断言，不以退出码或 ok 单项替代正文核对。 |
+| 暂时服务错误最多重试一次，遵守等待提示 | 分页持续限流场景检查两次后页请求与不少于提示的等待，随后停止；脚本自身不重试。 |
+| 未知读取配置列出实际选择，不默默切换 | `test_unknown_profile_lists_choices_without_switching` 配合真实 CLI 未配置用例。 |
+| 资源拒绝时停读该资源，保留已取得的搜索材料，不靠重新登录或新建应用解决 | `test_resource_denial_preserves_search_result_without_reauth` 检查保留链接、单次正文读取和没有登录调用。 |
+| 格式不明时不改解析器、空数组冒充成功；交付版本、错误和来源并清理敏感字段 | 格式变化、敏感错误两个 Agent 场景与既有结构异常用例；公共断言检查源 Skill 没被改写。 |
 
-## 通用交付与失败约定
+## 证据与仍然适用的范围
 
-| 承诺 / 可观察行为 | 证据与结论 |
-| --- | --- |
-| 仅退出码 0 且 status/ok 成功才算成功 | 脚本已有离线正反例；直接 CLI 读取由联网用例检查成功。Agent 面对失败响应不误报成功的行为未全面验证。 |
-| 临时网络、限流或服务错误最多重试一次，遵守服务等待提示 | 缺口：脚本超时或限流报告通过，但不实施重试；Agent 重试次数、等待及停止未测。 |
-| 指定配置不存在时列出现有配置供确认，不静默切换 | 部分：`test_unknown_profile_identifies_configuration_gap` 验证真实 CLI 错误；列举与确认行为未测。 |
-| 资源拒绝、失效链接或结构变化时停止该资源，交付已有材料 | 部分：日期脚本停止及错误报告有用例；搜索、文章及 Agent 保留部分材料的完整交付未测。 |
-| 错误保留代码、版本及来源，展示前去除凭证、授权链接和临时代码 | 部分：脚本保留错误原因、抑制非 JSON 原始诊断有用例；结构化错误中的敏感值去除、CLI 版本收集及最终展示没有 Agent 场景覆盖。 |
+测试文件：[日期与失败](../tests/test_waytoagi_daily.py)、[统一日期入口](../tests/test_waytoagi_updates.py)、[真实读取](../tests/test_waytoagi_live.py)、[年度回放](../tests/test_waytoagi_archive_live.py)、[Agent场景](../tests/test_waytoagi_agent.py)。分批结果及最终样本见 [agent-test-results.json](agent-test-results.json)，运行方法见 [agent-testing.md](agent-testing.md)。
 
-其他平台外链的读取、全部媒体展开、上游 CLI 内部配置/授权异常、所有账号访问资格都不属于本 Skill 的已承诺读取能力，不将它们扩大为本次测试任务。用户明确排除的取消和授权链接过期也不新增覆盖要求。
+本轮修正一处产品歧义：读取任务指定的配置不存在时先让用户选择；已要求安装接入新配置的任务按 setup 发起浏览器流程，避免不必要的再次确认。其他首轮失败来自测试目录、等价措辞、可恢复备份和同一文档链接识别，已校正后重验，没有据此删减产品要求。
 
-## 验收判断
+真实 setup 本轮复用现有授权，没有新建应用或重新授权。首次应用接入与授权仍使用此前的[真实体验记录](setup-walkthrough.md)；上游一键新建应用没有新增对外承诺。合成交接测试不能充当新账号真实授权通过，单次 Agent 样本也不是所有模型/账号永远成功的保证。
 
-读取命令的正常路径有实测；日期脚本的主要异常与边界有离线测试。**完整 Skill 产品的承诺覆盖尚未闭环**，缺口集中于当前 setup 与 Agent 按文档执行的结果处理、恢复和交付行为。
-
-补齐时应通过“给 Agent 任务及可控 CLI 响应，观察调用顺序与最终交付”验证这些行为；仅搜索文档有没有某句话，或增加一个读取模拟 JSON 的测试，不能证明 Skill 会按约定运行。真实授权仍由用户配合；无需为此自动重建应用或撤销已有授权。
-
-本次复跑结果与历史测试边界统一记录在 [verification.md](verification.md#本轮完整承诺核对2026-10-15)。
+**GitHub URL 安装仍待发布后验收**：当前包按用户要求未上传，不能把本地完整包安装写成已发布 URL 安装通过。其他平台外链、全部媒体展开、全部账号访问资格与上游内部授权异常不扩大为本 Skill 的覆盖义务；用户排除的取消、链接过期也未追加测试需求。
