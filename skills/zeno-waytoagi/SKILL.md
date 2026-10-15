@@ -9,19 +9,17 @@ description: "获取 WaytoAGI 最近更新、搜索知识库，并读取文章�
 
 已有可用环境直接执行下面的功能；需要安装、配置、补授权或排查 CLI 故障时，读取 [setup.md](setup.md)，按其路由查阅 CLI 自带指南。使用命名配置时，在下面的命令末尾加上同一个 `--profile <配置名>`。
 
-## 看最近更新
+## 按日期看更新
 
 运行包内脚本，将路径替换为实际安装位置：
 
 ```bash
-python3 "<Skill目录>/scripts/waytoagi_daily.py"
+python3 "<Skill目录>/scripts/waytoagi_daily.py" --date YYYY-MM-DD
 ```
 
-默认取得来源最近可用的更新批次。用户指定日期时追加 `--date YYYY-MM-DD`，用实际日期替换占位值。
+`--date` 必填，用实际更新日志日期替换占位值；获取最近更新时传入当天或前一天，日期采用 `Asia/Singapore`。支持从 **2025-06-01** 起页面已列出的日期，脚本自动定位近期日志或对应年份归档。
 
-`status=ok` 时，返回实际批次日期、标题、原摘要和原文链接。指定日期未出现或超出当前展示窗口时，如实说明，不用最新批次替代，也不解释成当天没有更新；`status=error` 时报告具体原因。
-
-查找展示窗口之外的更新，见[较早更新](references/reading-options.md#较早更新)。
+`status=ok` 时，返回查询日期、原标题、原摘要和原文链接。`date_batch_not_present` 表示已检查的页面没有目标批次，`outside_supported_range` 表示早于支持起点；如实说明，不换日，也不解释成当天没有更新。`status=error` 时报告具体原因。近期与历史使用同一条命令，页面未列出的日期无法还原。
 
 ## 搜索知识库
 

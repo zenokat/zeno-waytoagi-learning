@@ -6,7 +6,7 @@
 由维护者重新核对；不能用跳过或空结果掩盖已选择执行的联网验收失败。
 """
 
-from datetime import date
+from datetime import date, datetime
 import json
 import os
 from pathlib import Path
@@ -15,6 +15,7 @@ import subprocess
 import sys
 import unittest
 from xml.etree import ElementTree
+from zoneinfo import ZoneInfo
 
 
 SKILL = Path(__file__).resolve().parents[1] / "skills" / "zeno-waytoagi"
@@ -91,10 +92,25 @@ class WaytoagiLiveTests(unittest.TestCase):
         return ElementTree.fromstring(content)
 
     def latest(self):
-        """无输入，执行包内每日命令并返回本轮最近更新批次 JSON。"""
-        return self.cached("latest", lambda: self.run_json([
-            sys.executable, str(SKILL / "scripts/waytoagi_daily.py"),
-        ], "status"))
+        """无输入，从真实目录取得最近日期，再用必填日期接口读取并缓存结果。"""
+        if "latest" not in self.cache:
+            outline = self.run_json([
+                "lark-cli", "docs", "+fetch", "--doc",
+                "https://waytoagi.feishu.cn/wiki/QPe5w5g7UisbEkkow8XcDmOpn8e",
+                "--as", "user", "--scope", "outline", "--detail", "with-ids",
+            ])["data"]["document"]
+            today = datetime.now(ZoneInfo("Asia/Singapore")).date()
+            headings = ElementTree.fromstring(outline["content"]).iter("h3")
+            label = next((h.text for h in headings if re.match(r"\s*\d{1,2}\s*月\s*\d{1,2}\s*日", h.text or "")), None)
+            self.assertIsNotNone(label, "入口目录没有更新日期")
+            month, day = map(int, re.match(r"\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日", label).groups())
+            target = date(today.year, month, day)
+            if target > today:
+                target = date(today.year - 1, month, day)
+            self.cache["latest"] = self.run_json([
+                sys.executable, str(SKILL / "scripts/waytoagi_daily.py"), "--date", target.isoformat(),
+            ], "status")
+        return self.cache["latest"]
 
     def test_latest_update_has_original_material_and_actual_date(self):
         """最近批次必须完整，实际日期一致，且每条都有标题、摘要字段和真实链接。"""
@@ -247,40 +263,24 @@ class WaytoagiLiveTests(unittest.TestCase):
         self.assertIn("采样器", section)
 
     def test_historical_update_page_returns_older_dated_entries(self):
-        """历史页定位窗口之前的日期，并读到该日原摘要和文档引用，非仅 URL 可打开。"""
-        document = self.run_json([
-            "lark-cli", "docs", "+fetch", "--doc", HISTORY,
-            "--as", "user", "--scope", "outline", "--detail", "with-ids",
-        ])["data"]["document"]
-        tree = ElementTree.fromstring(document["content"])
-        cutoff = date.fromisoformat(self.latest()["available_dates"][-1])
-        year = None
-        selected = None
-        for heading in tree.iter():
-            text = heading.text or ""
-            month_heading = re.fullmatch(r"\s*(\d{4})\s*年\s*\d{1,2}\s*月\s*", text)
-            if month_heading:
-                year = int(month_heading.group(1))
-            day_heading = re.match(r"\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日", text)
-            if year and day_heading and date(year, *map(int, day_heading.groups())) < cutoff:
-                selected = heading
-                break
-        self.assertIsNotNone(selected, "历史页没有可验证的旧日期标题")
-        section = self.run_json([
-            "lark-cli", "docs", "+fetch", "--doc", HISTORY, "--as", "user",
-            "--scope", "section", "--start-block-id", selected.get("id"), "--detail", "full",
-        ])["data"]["document"]
-        self.assertFalse(section.get("tips"))
-        content = ElementTree.fromstring(section["content"])
-        self.assertEqual(content.get("mode"), "section")
-        self.assertEqual(content.get("requested-start"), selected.get("id"))
-        self.assertIsNone(content.find(".//excerpt"))
-        references = list(content.iter("cite"))
-        self.assertTrue(references, "没有取得历史条目的原文引用")
-        for reference in references:
-            self.assertTrue(reference.get("title"))
-            self.assertTrue(reference.get("doc-id") or reference.get("url"))
-        self.assertGreater(len("".join(content.itertext()).strip()), 80, "没有取得历史原摘要")
+        """同一日期脚本实际读通支持起点、跨年及当年归档，核对原条目数和来源。"""
+        older = "https://waytoagi.feishu.cn/wiki/GL7xwM3fyitr4kkiv76c1GHjnNg"
+        for target, count, source in [
+            ("2025-06-01", 1, older), ("2025-12-31", 6, older),
+            ("2026-01-01", 5, HISTORY), ("2026-09-30", 8, HISTORY),
+        ]:
+            with self.subTest(target=target):
+                result = self.run_json([
+                    sys.executable, str(SKILL / "scripts/waytoagi_daily.py"), "--date", target,
+                ], "status")
+                self.assertEqual(result["target_date"], target)
+                self.assertEqual(result["source_url"], source)
+                self.assertEqual(len(result["entries"]), count)
+                self.assertTrue(result["scope_complete"])
+                for entry in result["entries"]:
+                    self.assertTrue(entry["title"].strip())
+                    self.assertTrue(entry["summary"].strip())
+                    self.assertTrue(entry["links"])
 
 
 if __name__ == "__main__":

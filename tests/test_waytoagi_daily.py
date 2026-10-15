@@ -58,7 +58,7 @@ class CliReadingTests(unittest.TestCase):
         """CLI 日期标题包裹条目时仍保留标题、逐字摘要、链接和原块标识。"""
         response = cli_response_with_batches(["9 月 5 日", "9 月 4 日"])
         document = DAILY.document_from_cli(response, response["fetched_at"])
-        result = DAILY.extract_daily(document)
+        result = DAILY.extract_daily(document, date(2026, 9, 5))
         self.assertEqual(result["target_date"], "2026-09-05")
         self.assertEqual(result["entries"][0]["title"], "示例文章")
         self.assertEqual(result["entries"][0]["summary"], "原摘要：保留标点与 换行。\n下一行")
@@ -73,7 +73,7 @@ class CliReadingTests(unittest.TestCase):
             '<a href="https://example.com/article?x=1&amp;y=2"><b>示例文章</b></a>',
         )
         document = DAILY.document_from_cli(response, response["fetched_at"])
-        entry = DAILY.extract_daily(document)["entries"][0]
+        entry = DAILY.extract_daily(document, date(2026, 9, 5))["entries"][0]
         self.assertEqual(entry["title"], "示例文章")
         self.assertEqual(entry["links"][0]["url"], "https://example.com/article?x=1&y=2")
 
@@ -86,7 +86,7 @@ class CliReadingTests(unittest.TestCase):
             '</ul></h3>',
         )
         document = DAILY.document_from_cli(response, response["fetched_at"])
-        result = DAILY.extract_daily(document)
+        result = DAILY.extract_daily(document, date(2026, 9, 5))
         self.assertEqual([entry["title"] for entry in result["entries"]], ["示例文章", "第二篇"])
         self.assertEqual(result["skipped_image_blocks"], 1)
 
@@ -194,7 +194,7 @@ class DailyFailureTests(unittest.TestCase):
         behavior = {"side_effect": outcome} if isinstance(outcome, Exception) else {"return_value": outcome}
         output = io.StringIO()
         with patch.object(DAILY.subprocess, "run", **behavior) as run, \
-                patch.object(sys, "argv", ["waytoagi_daily.py", "--profile", "test-profile"]), \
+                patch.object(sys, "argv", ["waytoagi_daily.py", "--date", "2026-09-05", "--profile", "test-profile"]), \
                 contextlib.redirect_stdout(output):
             self.assertEqual(DAILY.main(), 2)
         result = json.loads(output.getvalue())
@@ -234,7 +234,7 @@ class DailyFailureTests(unittest.TestCase):
         response = subprocess.CompletedProcess([], 1, "", diagnostic)
         output = io.StringIO()
         with patch.object(DAILY.subprocess, "run", return_value=response), \
-                patch.object(sys, "argv", ["waytoagi_daily.py"]), contextlib.redirect_stdout(output):
+                patch.object(sys, "argv", ["waytoagi_daily.py", "--date", "2026-09-05"]), contextlib.redirect_stdout(output):
             self.assertEqual(DAILY.main(), 2)
         result = json.loads(output.getvalue())
         self.assertEqual(result["status"], "error")
@@ -247,7 +247,7 @@ class DailyFailureTests(unittest.TestCase):
             environment = {**os.environ, "PYTHONTZPATH": empty_data}
             # -S 排除已安装的 tzdata，空 PYTHONTZPATH 排除系统库，模拟新机器缺依赖。
             process = subprocess.run(
-                [sys.executable, "-S", str(Path(DAILY.__file__))], env=environment,
+                [sys.executable, "-S", str(Path(DAILY.__file__)), "--date", "2026-09-05"], env=environment,
                 capture_output=True, text=True, timeout=10,
             )
         self.assertEqual(process.returncode, 2)
@@ -261,27 +261,27 @@ class DailyFailureTests(unittest.TestCase):
 class DailyExtractionTests(unittest.TestCase):
     """覆盖实际用户可观察行为，防止空结果、日期错配与摘要改写。"""
 
-    def test_default_reads_latest_available_batch(self):
-        """未指定日期且当天尚无批次时，取得最近更新的原始条目和实际日期。"""
-        result = DAILY.extract_daily(document_with_batches(["9 月 5 日", "9 月 4 日"]))
+    def test_requested_recent_date_returns_original_batch(self):
+        """指定近期日期时取得该日原始条目和实际日期。"""
+        result = DAILY.extract_daily(document_with_batches(["9 月 5 日", "9 月 4 日"]), date(2026, 9, 5))
         self.assertEqual(result["status"], "ok")
         self.assertEqual(result["target_date"], "2026-09-05")
         self.assertEqual(result["entries"][0]["source_block_id"], "entry-0")
 
-    def test_latest_batch_keeps_previous_year(self):
-        """新年当天没有更新时，默认取得的年末批次仍使用原来的年份。"""
-        result = DAILY.extract_daily(document_with_batches(["12 月 31 日", "12 月 30 日"], "2026-12-31T17:00:00Z"))
+    def test_requested_year_end_batch_keeps_previous_year(self):
+        """新年请求前一天批次时，年末批次仍使用原来的年份。"""
+        result = DAILY.extract_daily(document_with_batches(["12 月 31 日", "12 月 30 日"], "2026-12-31T17:00:00Z"), date(2026, 12, 31))
         self.assertEqual(result["target_date"], "2026-12-31")
 
-    def test_default_does_not_hide_empty_latest_batch(self):
-        """最新标题下缺少条目时显式失败，不以更旧批次掩盖提取异常。"""
+    def test_requested_empty_batch_does_not_fall_back(self):
+        """指定标题下缺少条目时显式失败，不以更旧批次掩盖提取异常。"""
         document = document_with_batches(["9 月 5 日", "9 月 4 日"])
         document["blocks"].pop(2)
         with self.assertRaisesRegex(ValueError, "EMPTY_BATCH"):
-            DAILY.extract_daily(document)
+            DAILY.extract_daily(document, date(2026, 9, 5))
 
-    def test_command_defaults_to_latest_and_reports_source_errors(self):
-        """实际命令省略日期时取得最新批次；不完整输入仍返回结构化错误和失败退出码。"""
+    def test_command_reads_requested_date_and_reports_source_errors(self):
+        """实际命令按必填日期取批次；不完整输入仍返回结构化错误和失败退出码。"""
         for complete in (True, False):
             with self.subTest(complete=complete), tempfile.TemporaryDirectory() as directory:
                 response = cli_response_with_batches(["9 月 5 日", "9 月 4 日"])
@@ -289,17 +289,17 @@ class DailyExtractionTests(unittest.TestCase):
                     response["data"]["document"]["content"] = response["data"]["document"]["content"][:-11]
                 source = Path(directory) / "cli-section.json"
                 source.write_text(json.dumps(response))
-                process = subprocess.run([sys.executable, "-B", str(Path(DAILY.__file__)), "--input", str(source)], capture_output=True, text=True, check=False)
+                process = subprocess.run([sys.executable, "-B", str(Path(DAILY.__file__)), "--date", "2026-09-05", "--input", str(source)], capture_output=True, text=True, check=False)
                 result = json.loads(process.stdout)
                 self.assertEqual(process.returncode, 0 if complete else 2)
                 self.assertEqual(result["status"], "ok" if complete else "error")
-                self.assertEqual(result["target_date"], "2026-09-05" if complete else None)
+                self.assertEqual(result["target_date"], "2026-09-05")
 
     def test_command_profile_argument_reaches_cli_fetch(self):
         """命令行 --profile 传入的命名配置名原样到达在线读取，离线 --input 模式不触发 CLI。"""
         document = DAILY.document_from_cli(cli_response_with_batches(["9 月 5 日"]), "2026-09-06T01:00:00+00:00")
         with patch.object(DAILY, "fetch_cli_section", return_value=document) as fetch, \
-                patch.object(sys, "argv", ["waytoagi_daily.py", "--profile", "waytoagi-verify"]), \
+                patch.object(sys, "argv", ["waytoagi_daily.py", "--date", "2026-09-05", "--profile", "waytoagi-verify"]), \
                 contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(DAILY.main(), 0)
         fetch.assert_called_once_with("waytoagi-verify")

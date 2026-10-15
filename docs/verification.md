@@ -6,21 +6,22 @@ Skill 中的可执行读取路径必须有对应的用例并实际通过。CLI �
 
 | SKILL.md / reading-options.md 的能力 | 用例与检查内容 |
 | --- | --- |
-| 最近可用更新 | 离线测试验证日期选择、原标题、原摘要、引用链接；联网 `test_latest_update_has_original_material_and_actual_date` 验证真实批次、条目和链接。 |
+| 按日期读取近期更新 | `test_recent_date_reads_only_the_matching_recent_batch` 验证显式日期与来源；联网 `test_latest_update_has_original_material_and_actual_date` 从实际日期调用脚本，检查批次、原条目和链接。 |
 | 指定日期 | 离线 `test_retains_summary_and_only_requested_day` 等；联网 `test_requested_date_returns_same_batch` 验证指定真实日期取得同批次原条目。 |
-| 日期未出现、窗口之外及读取失败 | 离线测试验证独立状态、空条目、结构变化、节选、缺引用和授权失败，避免误报无更新。 |
+| 日期未出现、超出支持范围及读取失败 | `DateCommandTests` 覆盖目标缺失、2025-06-01起点及前一天、无效/未来日期和归档失败；保留结构变化、节选、缺引用与 CLI 错误报告检查。 |
 | 知识库搜索 | 联网 `test_search_returns_waytoagi_links_and_matching_context` 检查关键词命中、标题、摘要字段及知识库 URL。 |
 | 翻页 | 联网 `test_search_pagination_returns_new_same_space_results` 用真实令牌取得新增结果并保持同一知识库。 |
 | 仅查标题 | 联网 `test_title_only_search_matches_every_title` 检查每个返回标题实际命中。 |
 | 全文与目录 | 联网 `test_full_article_contains_multiple_sections_and_body`、`test_outline_returns_heading_ids` 检查跨章节正文、范围和实际块 ID。 |
 | 按章节读取 | 联网 `test_section_returns_body_and_stops_before_next_peer` 检查该节正文和同级标题边界。 |
 | 关键词上下文及继续展开 | 联网 `test_keyword_returns_matching_local_context`、`test_keyword_context_can_expand_via_outline_section` 检查局部标记、实际命中及从目录定位章节后的继续读取。 |
-| 较早更新 | 联网 `test_historical_update_page_returns_older_dated_entries` 定位当前窗口之前的日期，读取该日原摘要和文档引用。 |
+| 统一历史更新 | `test_date_query_follows_year_route_and_preserves_original_entry`、同月日跨年与年末元旦用例；联网 `test_historical_update_page_returns_older_dated_entries` 用同一脚本核对2025起点、年末、2026元旦与当年历史条目。 |
+| 全年度实际批次 | `test_all_supported_archive_batches_preserve_original_entry_ids` 临时读取真实年度快照，对每个支持日期回放脚本公开入口，核对全部原条目ID，避免漏项和混入其他日期。回放不是逐日联网。 |
 | 命名配置转发 | 离线测试覆盖每日命令及两次底层请求；整组联网用例可携带同一 `WAYTOAGI_PROFILE` 复验真实配置。 |
 | 脚本对环境与 CLI 失败的报告 | 离线 `DailyFailureTests` 覆盖缺 CLI、超时、授权/权限/资源/限流/凭证存储错误和非 JSON 响应下的原因保留与退出行为；缺时区库用真实独立进程复现并验证错误 JSON。不验证 CLI 内部授权或故障恢复流程。 |
 | 无命中与不合法读取目标 | 联网 `test_no_search_match_is_success_with_empty_results`、`test_unknown_profile_identifies_configuration_gap`、`test_missing_section_id_is_rejected` 区分空搜索、未配置和失效章节错误。 |
 
-离线用例见 [test_waytoagi_daily.py](../tests/test_waytoagi_daily.py)，联网用例见 [test_waytoagi_live.py](../tests/test_waytoagi_live.py)。
+离线用例见 [原文提取与失败报告](../tests/test_waytoagi_daily.py)、[统一日期命令](../tests/test_waytoagi_updates.py)；联网用例见 [真实读取](../tests/test_waytoagi_live.py)、[年度快照回放](../tests/test_waytoagi_archive_live.py)。
 
 ## 运行方式
 
@@ -30,12 +31,12 @@ Skill 中的可执行读取路径必须有对应的用例并实际通过。CLI �
 python3 -m unittest discover -s tests -v
 ```
 
-默认执行 33 个离线用例，并明确跳过 14 个联网用例。跳过不等于联网验收通过。
+默认执行 48 个离线用例，并明确跳过 15 个联网用例。跳过不等于联网验收通过。
 
 在可访问系统钥匙串、已有有效飞书授权的环境中，单独运行联网验收：
 
 ```bash
-WAYTOAGI_LIVE=1 python3 -m unittest discover -s tests -p test_waytoagi_live.py -v
+WAYTOAGI_LIVE=1 python3 -m unittest discover -s tests -p '*live.py' -v
 ```
 
 需要指定已有配置时，同一命令再设置 `WAYTOAGI_PROFILE=<配置名>`。测试只读，不登录、不创建应用、不保存响应正文或凭证；没有可用账号、网络失败或来源变化都会报失败，需要核对后重验。
@@ -77,4 +78,32 @@ WAYTOAGI_LIVE=1 python3 -m unittest discover -s tests -p test_waytoagi_live.py -
 
 全部节点查询成功，文档创建时间与节点创建时间在这 32 篇中逐秒相同；与日志的日期差均为 0 或 +1 天。最近修改日期则有 11 篇当天、20 篇次日、1 篇晚 31 天：[Clawdbot 教程 01](https://waytoagi.feishu.cn/wiki/GycBwU1RxiSYjYkYEaOcWgHhnCb)列在 1 月 31 日日志，2 月 1 日 01:10 创建，3 月 3 日 15:15 最近修改。逐条数据与来源链接见[日期对照表](update-date-comparison.csv)。
 
-判断：按创建日期发现近期与历史新增资料值得继续验证；本次样本支持“时间接近”，不支持“精确同日等价”，也不能证明搜索结果集合与日志条目完全一致。是否以文档新增替代社区更新批次仍待产品决定，不能据此提前移除日志路径或承诺完整历史更新检索。
+当时判断：样本支持创建日期与日志“时间接近”，不支持“精确同日等价”，也不能证明搜索结果集合与日志条目完全一致。后续用户已决定保留日志日期口径，最终实现见下一节。
+
+## 按日志日期统一读取（2026-10-15）
+
+用户决定保留更新日志日期口径，统一使用 `waytoagi_daily.py --date YYYY-MM-DD`；随后根据实际旧记录的混合格式，将产品支持起点收敛到 **2025-06-01**。早于起点直接返回 `outside_supported_range`，不读取或兼容2023—2024年、2025年上半年的杂项与范围记录。上一节的创建时间方案保留为探索证据，不纳入产品。
+
+脚本先查近期板块；目标不在其中时，查[年度更新页](https://waytoagi.feishu.cn/wiki/FjiOwWp2giA7hRk6jjfcPioCnAc)，并按页首真实路由进入[2025年归档](https://waytoagi.feishu.cn/wiki/GL7xwM3fyitr4kkiv76c1GHjnNg)。年份依据来源目录与年份路由，正文引用的外部平台链接原样保留。原始正文只在测试内存或临时目录使用，不收录进仓库；仓库发布代码、测试和验证结果。
+
+| 需求 / 推导方向 | 覆盖与证据 |
+| --- | --- |
+| 日期输入 / 等价类与边界 | 必填、错误格式、不存在日期、未来日期；起点2025-06-01成功，前一天和更早年份超出范围。 |
+| 来源选择 / 决策表与场景 | 近期命中、当前年度归档、跨年路由、同月日不同年份、年末与次年元旦；命名配置和用户身份贯穿各页。 |
+| 结果与失败分支 / 场景 | 日期缺失不换日，路由缺失报错；重复日期、来源/锚点/日期错配、节选、空批次、未知结构和权限失败不冒充空更新。 |
+| 原文保真与全部条目 | 已有摘要、引用与链接检查；年度快照每个支持日期的输出条目ID与原始列表逐项对应。 |
+
+最终离线 **48 个用例通过**；联网 **15 个检查通过**，含已有搜索、分页与正文读取。年度快照回放覆盖2025年下半年213个日期批次、658条文章，以及2026年归档264个日期批次、1,569条文章，合计 **477个批次、2,227条文章**。这是两份年度快照的数据，不包含近期页面的额外批次，不是477次独立联网请求，也不证明其他账号或未来页面格式。
+
+此外，直接运行重构脚本的真实日期结果如下：
+
+| 查询日期 | 结果 | 原条目数 |
+| --- | --- | ---: |
+| 2026-10-14 | 近期页面 `ok` | 6 |
+| 2026-09-30 | 当年归档 `ok` | 8 |
+| 2025-06-01 | 支持起点、跨年归档 `ok` | 1 |
+| 2025-12-31 | 2025年归档 `ok` | 6 |
+| 2026-01-01 | 2026年归档 `ok` | 5 |
+| 2026-10-15、2026-10-01 | `date_batch_not_present`，列出已检查来源 | 0 |
+
+来源本次未列出10月1日，并非脚本能补齐的连续日历。对外承诺是“读取支持起点之后、页面实际列出的更新日期”，不是每个日历日一定有内容。仍未重新执行完整安装与首次授权的 Agent 流程。
