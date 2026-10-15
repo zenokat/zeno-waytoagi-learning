@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 
 SPEC = importlib.util.spec_from_file_location(
-    "updates", Path(__file__).parents[1] / "skills/zeno-waytoagi/scripts/waytoagi_daily.py",
+    "updates", Path(__file__).parents[1] / "skills/zeno-waytoagi-learning/scripts/waytoagi_daily.py",
 )
 UPDATES = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(UPDATES)

@@ -16,7 +16,7 @@ from xml.sax.saxutils import escape
 from zoneinfo import TZPATH
 
 
-SPEC = importlib.util.spec_from_file_location("waytoagi_daily", Path(__file__).parents[1] / "skills" / "zeno-waytoagi" / "scripts" / "waytoagi_daily.py")
+SPEC = importlib.util.spec_from_file_location("waytoagi_daily", Path(__file__).parents[1] / "skills" / "zeno-waytoagi-learning" / "scripts" / "waytoagi_daily.py")
 DAILY = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(DAILY)
 

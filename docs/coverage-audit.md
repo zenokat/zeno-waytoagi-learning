@@ -2,7 +2,7 @@
 
 此前盘点的本产品能力、边界与 Agent 处理约定已补充测试并取得通过记录。最终证据包括 **49 个产品离线用例、1 个测试隔离守卫用例、16 个真实 CLI/快照检查、23 个合成 Agent 场景和1次当前版本真实 setup**。Agent 场景由21个测试方法覆盖，另有1个真实 setup 方法；这些数量不能直接混作同一种用例相加。
 
-核对范围为 [SKILL.md](../skills/zeno-waytoagi/SKILL.md)、[setup.md](../skills/zeno-waytoagi/setup.md)、[reading-options.md](../skills/zeno-waytoagi/references/reading-options.md)、[failures.md](../skills/zeno-waytoagi/references/failures.md) 与 [README](../README.md)。下表说明每项证据实际证明什么；没有靠删除约定或检查文档关键词来获得通过结论。
+核对范围为 [SKILL.md](../skills/zeno-waytoagi-learning/SKILL.md)、[setup.md](../skills/zeno-waytoagi-learning/setup.md)、[reading-options.md](../skills/zeno-waytoagi-learning/references/reading-options.md)、[failures.md](../skills/zeno-waytoagi-learning/references/failures.md) 与 [README](../README.md)。下表说明每项证据实际证明什么；没有靠删除约定或检查文档关键词来获得通过结论。
 
 本轮验收对象是安装配置与三条读取流程，由任务显式进入 Skill。收尾时出现的并行更名和触发说明改稿保持独立；自动选择 Skill 的新增触发策略不作为这批场景的通过结论。
 

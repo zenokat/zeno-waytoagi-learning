@@ -94,12 +94,12 @@ Agent 报告用户授权记录包含更多权限。Echo 独立执行只读状态
 
 本地 Skill 副本在本次空白 Linux 环境中的 setup 主流程已走通。三项读取成功，用户已确认现有权限足够即可继续。本次记录是正常路径的实际样本，本产品职责内的需求、覆盖建模及用例仍待继续共同深化。
 
-Q9 已确认：需要接入应用时，默认由 Agent 发起官方一键流程，提供链接或二维码，由用户在浏览器配合；有具体阻碍时才退回终端或手工凭证输入。已有可用配置和授权继续复用。已将该体验要求写入[首版规格](spec.md)及 [setup.md](../skills/zeno-waytoagi/setup.md)。一键接入已有应用已有证据，一键新建应用仍需实际验证后才能对外承诺。
+Q9 已确认：需要接入应用时，默认由 Agent 发起官方一键流程，提供链接或二维码，由用户在浏览器配合；有具体阻碍时才退回终端或手工凭证输入。已有可用配置和授权继续复用。已将该体验要求写入[首版规格](spec.md)及 [setup.md](../skills/zeno-waytoagi-learning/setup.md)。一键接入已有应用已有证据，一键新建应用仍需实际验证后才能对外承诺。
 
 Q10、Q11 已结束讨论：Zeno 不要求针对取消、链接过期或等待超时单独设计本 Skill 的异常处理。进一步明确合理分工：lark-cli 的配置、授权和通用故障处理由上游指南负责，本 Skill 按需路由，不复制其所有流程与边界，也不据此生成重复的测试承诺。
 
-据此精简了 [setup.md](../skills/zeno-waytoagi/setup.md) 的职责与路由，移除[失败说明](../skills/zeno-waytoagi/references/failures.md)中取消、过期的自定义规则。已在容器内实际确认 `lark-cli skills read lark-shared` 能返回当前版本的配置、身份与权限参考索引；这里只验证了路由入口，未重跑改稿后的完整 Agent 流程，也未新增自动化用例。其余三项读取需求仍按原顺序分别深化。
+据此精简了 [setup.md](../skills/zeno-waytoagi-learning/setup.md) 的职责与路由，移除[失败说明](../skills/zeno-waytoagi-learning/references/failures.md)中取消、过期的自定义规则。已在容器内实际确认 `lark-cli skills read lark-shared` 能返回当前版本的配置、身份与权限参考索引；这里只验证了路由入口，未重跑改稿后的完整 Agent 流程，也未新增自动化用例。其余三项读取需求仍按原顺序分别深化。
 
-容器内 Agent 会话为 `01a1357a-0c5b-7b92-a9e3-8a7a0de687b8`，第六轮已结束。后续仍按 [setup.md](../skills/zeno-waytoagi/setup.md) 接续。应用配置与有效用户身份已由 CLI 独立核对，三个功能的实际命令和结果已有记录。
+容器内 Agent 会话为 `01a1357a-0c5b-7b92-a9e3-8a7a0de687b8`，第六轮已结束。后续仍按 [setup.md](../skills/zeno-waytoagi-learning/setup.md) 接续。应用配置与有效用户身份已由 CLI 独立核对，三个功能的实际命令和结果已有记录。
 
 本次仅代表 Linux 空白环境的一条真实路径，不能据此宣称 Mac、其他系统或所有异常分支均已验收。

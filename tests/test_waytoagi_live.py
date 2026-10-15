@@ -18,7 +18,7 @@ from xml.etree import ElementTree
 from zoneinfo import ZoneInfo
 
 
-SKILL = Path(__file__).resolve().parents[1] / "skills" / "zeno-waytoagi"
+SKILL = Path(__file__).resolve().parents[1] / "skills" / "zeno-waytoagi-learning"
 SPACE_ID = "7226178700923011075"
 ARTICLE = "https://waytoagi.feishu.cn/wiki/DyQPwr5Uui6n0HktnoxcYDrwngd"
 HISTORY = "https://waytoagi.feishu.cn/wiki/FjiOwWp2giA7hRk6jjfcPioCnAc"

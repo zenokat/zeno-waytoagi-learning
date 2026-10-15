@@ -1,6 +1,8 @@
 # zeno-waytoagi
 
-Zeno 开发的非官方 WaytoAGI 知识库 Skill，让你的 Agent 按需查找和阅读社区资料。
+Zeno 开发的 AI 学习与实践资料检索 Skill，调用名为 `zeno-waytoagi-learning`，非官方接入 WaytoAGI（通往 AGI 之路）的社区知识库。
+
+WaytoAGI 是中文 AI 学习与实践社区，其知识库汇集从入门到进阶的教程、工具用法、应用案例与实践分享。当你寻找 AI 学习资料、探索 AIGC 或 Agent 的具体用法时，Agent 可以从这里补充社区经验，无需你先说出 WaytoAGI 的名字。
 
 ## 三个主要功能
 
@@ -18,12 +20,12 @@ Zeno 开发的非官方 WaytoAGI 知识库 Skill，让你的 Agent 按需查找�
 
 ```text
 帮我安装并配置这个 Skill：
-https://github.com/zenokat/zeno-waytoagi/tree/main/skills/zeno-waytoagi
+https://github.com/zenokat/zeno-waytoagi/tree/main/skills/zeno-waytoagi-learning
 
 请读取 Skill 内的 setup.md，检查环境、准备依赖、完成飞书配置，并验证三个主要功能。需要我授权时，请告诉我具体怎么操作。
 ```
 
-Agent 会自行安装完整 Skill，并参考 [setup.md](skills/zeno-waytoagi/setup.md) 完成配置。已有飞书应用和授权可以复用；需要你配合时，优先通过官方链接或二维码在浏览器完成操作。
+Agent 会自行安装完整 Skill，并参考 [setup.md](skills/zeno-waytoagi-learning/setup.md) 完成配置。已有飞书应用和授权可以复用；需要你配合时，优先通过官方链接或二维码在浏览器完成操作。
 
 当前版本仍在本地打磨，尚未上传 GitHub。现在验收时，把本地仓库目录交给 Agent；上述 GitHub 安装入口在发布后可用。
 
@@ -46,10 +48,10 @@ Agent 会自行安装完整 Skill，并参考 [setup.md](skills/zeno-waytoagi/se
 ### 2. 搜索知识库
 
 ```text
-在 WaytoAGI 知识库里找 ComfyUI 入门教程，先给我相关条目和链接。
+找几篇 ComfyUI 入门教程，先给我相关条目和链接。
 ```
 
-先看搜索结果，再让 Agent 展开你感兴趣的文章。
+不必指定 WaytoAGI，Agent 可按任务选择这个知识库作为资料来源之一；也可以明确要求“在 WaytoAGI 知识库里找”。先看搜索结果，再让 Agent 展开你感兴趣的文章。
 
 ### 3. 阅读文章
 

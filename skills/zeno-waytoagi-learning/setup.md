@@ -4,7 +4,7 @@
 
 ## 准备
 
-- 将仓库中的 `skills/zeno-waytoagi/` 完整安装到当前 Agent 的 Skill 目录，保全目标位置已有的用户修改。
+- 将仓库中的 `skills/zeno-waytoagi-learning/` 完整安装到当前 Agent 的 Skill 目录，保全目标位置已有的用户修改。
 - 准备 Python 3.9 以上（可用 `Asia/Singapore` 时区）和官方 [lark-cli](https://github.com/larksuite/cli/blob/main/README.zh.md)。
 
 ## 飞书接入与用户交互
