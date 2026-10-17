@@ -364,7 +364,7 @@ class AgentBehaviorTests(unittest.TestCase):
 
     def test_current_package_installs_and_validates_existing_environment(self):
         """当前完整包安装后复用宽权限配置，验证三功能并如实交付；不等同首次授权。"""
-        evidence = self.evaluate("setup_existing", "安装 skill/ 到本 Agent 的 Skill 安装目标，并参考 setup.md 配置验证。已有 waytoagi 飞书配置可用。")
+        evidence = self.evaluate("setup_existing", "安装 skill/ 到本 Agent 的 Skill 安装目标，并参考 skill/references/setup.md 配置验证。已有 waytoagi 飞书配置可用。")
         expected = {str(p.relative_to(SKILL)): p.read_bytes() for p in SKILL.rglob("*") if p.is_file() and "__pycache__" not in p.parts}
         for name, content in expected.items():
             self.assertEqual(evidence["installed"].get(name), content, f"安装必须保留当前完整包：{name}")
@@ -445,7 +445,7 @@ class AgentBehaviorTests(unittest.TestCase):
     @unittest.skipUnless(os.environ.get("WAYTOAGI_AGENT_LIVE") == "1", "需额外开启真实已授权环境的完整安装验证")
     def test_current_setup_with_real_existing_authorization(self):
         """真实 Agent 安装当前包、复用原授权并完成三功能；用真实响应的长度和链接核对交付。"""
-        evidence = self.evaluate("setup_live", "请安装 skill/ 并按 setup.md 验证环境与三个功能。使用现有 waytoagi 配置与用户授权，保留其他配置及默认项，不要重新登录或改权限。日期验证可以选来源实际列出的日期。")
+        evidence = self.evaluate("setup_live", "请安装 skill/ 并按 skill/references/setup.md 验证环境与三个功能。使用现有 waytoagi 配置与用户授权，保留其他配置及默认项，不要重新登录或改权限。日期验证可以选来源实际列出的日期。")
         witnesses = evidence["witnesses"]
         search = [w for w in witnesses if w["args"][:2] == ["drive", "+search"] and w.get("ok") is True]
         self.assertTrue(search)
