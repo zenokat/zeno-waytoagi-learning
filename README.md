@@ -1,4 +1,4 @@
-# zeno-waytoagi
+# zeno-waytoagi-learning
 
 **让你的 Agent 在 AI 学习与实践中，按需找到 WaytoAGI 社区资料。**
 
@@ -116,7 +116,7 @@
 复制这句话，交给支持 Skill 的 Agent：
 
 ```text
-帮我安装并配置这个 Skill：https://github.com/zenokat/zeno-waytoagi/tree/main/skills/zeno-waytoagi-learning
+帮我安装并配置这个 Skill：https://github.com/zenokat/zeno-waytoagi-learning/tree/main/skills/zeno-waytoagi-learning
 ```
 
 ## 反馈与交流
