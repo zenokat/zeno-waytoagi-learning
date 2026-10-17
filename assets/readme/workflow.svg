@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 工作方式示意：用可编辑的静态矢量图解释学习问题、社区资料和带来源回答之间的关系。 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440" role="img" aria-labelledby="title description">
+  <title id="title">从学习问题，到有来源的回答</title>
+  <desc id="description">用户提出 AI 学习与实践问题，Agent 通过 zeno-waytoagi-learning 搜索 WaytoAGI 资料、查询更新或按需阅读正文，再结合任务整理回答并保留原文链接。</desc>
+
+  <!-- 固定背景与系统字体使图片在 GitHub 的浅色和深色页面中保持一致。 -->
+  <rect width="1200" height="440" rx="20" fill="#FBFAF6"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif">
+    <text x="64" y="78" font-size="44" font-weight="650" fill="#193B33">从学习问题，到有来源的回答</text>
+    <text x="65" y="120" font-size="25" fill="#6C7C73">zeno-waytoagi-learning · 工作方式示意</text>
+
+    <!-- 三个阶段使用同一阅读基线；中间的文档轮廓对应真实的知识库读取机制。 -->
+    <g id="learning-question">
+      <text x="66" y="207" font-size="26" fill="#397863">01</text>
+      <text x="64" y="265" font-size="46" font-weight="600" fill="#193B33">提出问题</text>
+      <text x="65" y="316" font-size="30" fill="#6C7C73">学工具 · 找案例</text>
+      <text x="65" y="356" font-size="30" fill="#6C7C73">查更新 · 读文章</text>
+    </g>
+
+    <!-- 连线仅表达任务推进方向，不暗示所有问题都必须走过全部读取入口。 -->
+    <g id="flow" fill="none" stroke="#397863" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 326 262 H 396 M 384 250 L 396 262 L 384 274"/>
+      <path d="M 802 262 H 872 M 860 250 L 872 262 L 860 274"/>
+    </g>
+
+    <g id="community-material">
+      <rect x="438" y="162" width="328" height="230" rx="10" fill="#FBFAF6" stroke="#D6E0D8" stroke-width="2"/>
+      <rect x="429" y="153" width="328" height="230" rx="10" fill="#FBFAF6" stroke="#D6E0D8" stroke-width="2"/>
+      <rect x="420" y="144" width="328" height="230" rx="10" fill="#FBFAF6" stroke="#397863" stroke-width="2"/>
+      <text x="446" y="194" font-size="26" fill="#397863">02 · 社区知识库</text>
+      <text x="444" y="259" font-size="46" font-weight="600" fill="#193B33">WaytoAGI</text>
+      <path d="M 446 284 H 720" stroke="#D6E0D8" stroke-width="2"/>
+      <text x="446" y="326" font-size="30" fill="#6C7C73">检索资料 · 按需阅读</text>
+    </g>
+
+    <g id="sourced-answer">
+      <text x="902" y="207" font-size="26" fill="#397863">03</text>
+      <text x="900" y="265" font-size="46" font-weight="600" fill="#193B33">整理回答</text>
+      <text x="901" y="316" font-size="30" fill="#6C7C73">结合你的问题</text>
+      <text x="901" y="356" font-size="30" fill="#397863">保留原文链接</text>
+    </g>
+  </g>
+</svg>
