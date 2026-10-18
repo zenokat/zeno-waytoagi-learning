@@ -1,44 +1,145 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 工作方式示意：用可编辑的静态矢量图解释任务需求、社区资料和带来源回答之间的关系。 -->
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440" role="img" aria-labelledby="title description">
-  <title id="title">从任务需求，到有来源的回答</title>
-  <desc id="description">当前任务需要 AI 知识、工具玩法或实践经验时，Agent 通过 zeno-waytoagi-search 搜索 WaytoAGI 资料、查询更新或按需阅读正文，再结合任务整理回答并保留原文链接。</desc>
+<!--
+  README 产品价值图：三条横向流程分别对应主题检索、更新查询和文章阅读。
+  中央纵向包装框表示三个入口同属一个 Skill，横向箭头表示每种需求的处理路径。
+  视觉沿用 Zeno 角色资产的酒红、深蓝与少量大折面，并用米白纸卡和黄色标记强调信息。
+  使用原生矢量形状与文本，便于维护，也避免外部图片或字体影响 GitHub 展示。
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1060" viewBox="0 0 1600 1060" role="img" aria-labelledby="title description">
+  <title id="title">一个 Skill，三种方式把社区经验用到你的任务里</title>
+  <desc id="description">上、中、下三条独立工作流从需求出发：寻找动态演示玩法，通过主题检索获得教程和案例，形成演示方案；了解近期社区动态，通过更新查询获得日志并按主题筛选，形成值得跟进的内容清单；分享一篇社区文章，通过文章阅读提炼方法，形成核心思路与应用建议。中间三个入口由纵向大框包裹，均属于 zeno-waytoagi-search Skill。Agent 按任务需要选择入口，结果保留原文链接。</desc>
 
-  <!-- 固定背景与系统字体使图片在 GitHub 的浅色和深色页面中保持一致。 -->
-  <rect width="1200" height="440" rx="20" fill="#FBFAF6"/>
-  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif">
-    <text x="64" y="78" font-size="44" font-weight="650" fill="#193B33">从任务需求，到有来源的回答</text>
-    <text x="65" y="120" font-size="25" fill="#6C7C73">zeno-waytoagi-search · 工作方式示意</text>
+  <rect width="1600" height="1060" fill="#F7F3EA"/>
+  <!-- 边角折纸与轻微错位的底片呼应角色的硬边几何语言，不干扰阅读。 -->
+  <path d="M1496 0H1600V104Z" fill="#E8E0D2"/>
+  <path d="M1544 0H1600V56Z" fill="#DED4C3"/>
+  <path d="M0 972V1060H88Z" fill="#E8E0D2"/>
 
-    <!-- 三个阶段使用同一阅读基线；中间的文档轮廓对应真实的知识库读取机制。 -->
-    <g id="task-request">
-      <text x="66" y="207" font-size="26" fill="#397863">01</text>
-      <text x="64" y="265" font-size="46" font-weight="600" fill="#193B33">处理任务</text>
-      <text x="65" y="316" font-size="30" fill="#6C7C73">做内容 · 搭流程</text>
-      <text x="65" y="356" font-size="30" fill="#6C7C73">找思路 · 查资料</text>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" fill="#243858">
+    <path d="M62 110L748 105L754 121L66 128Z" fill="#E9B937"/>
+    <text x="64" y="92" font-size="52" font-weight="750">把社区经验，用到你的任务里</text>
+    <text x="66" y="168" font-size="28" fill="#5B6370">让 Agent 按需检索与阅读 WaytoAGI 的 AI 知识、工具玩法与实践案例</text>
+    <g stroke="#9A2947" stroke-width="7" stroke-linecap="square">
+      <path d="M802 63L820 41M822 87L849 77M829 112L856 116"/>
     </g>
 
-    <!-- 连线仅表达任务推进方向，不暗示所有问题都必须走过全部读取入口。 -->
-    <g id="flow" fill="none" stroke="#397863" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M 326 262 H 396 M 384 250 L 396 262 L 384 274"/>
-      <path d="M 802 262 H 872 M 860 250 L 872 262 L 860 274"/>
+    <!-- 左、中、右三列；三条流程保持相同的阅读基线。 -->
+    <text x="66" y="276" font-size="30" font-weight="700">你的需求</text>
+    <text x="1138" y="276" font-size="30" font-weight="700">用到当前任务</text>
+
+    <!-- 纵向包装：深蓝侧面和折角使三个模块明确属于同一个 Skill。 -->
+    <path d="M565 234H1065V943L1037 969H565Z" fill="#DCD5CA"/>
+    <path d="M550 218H1028L1050 240V928L1028 950H550Z" fill="#E9E2D5" stroke="#243858" stroke-width="3"/>
+    <path d="M550 218H1028L1050 240V305H550Z" fill="#243858"/>
+    <path d="M1028 218V240H1050Z" fill="#466080"/>
+    <path d="M1028 928H1050L1028 950Z" fill="#AF9B83"/>
+    <text x="578" y="256" font-size="29" font-weight="700" fill="#FFFFFF">zeno-waytoagi-search</text>
+    <text x="578" y="287" font-size="21" fill="#E8E0D2">一个 Skill · 三个资料入口</text>
+
+    <!-- 第一条：通过主题检索，把已有教程和案例用于方案构思。 -->
+    <g id="topic-workflow">
+      <path d="M72 340H462V484H72Z" fill="#E5DDD0"/>
+      <path d="M64 330H440L454 344V474H64Z" fill="#FFFDF8" stroke="#D1C7B7" stroke-width="2"/>
+      <path d="M64 330H73V474H64Z" fill="#9A2947"/>
+      <text x="90" y="369" font-size="22" font-weight="700" fill="#9A2947">01 / 找思路、找做法</text>
+      <text x="90" y="414" font-size="30" font-weight="650">“想做一份动态演示”</text>
+      <text x="90" y="450" font-size="23" fill="#5B6370">有哪些玩法和教程可以参考？</text>
+      <path d="M480 402H530M518 391L530 402L518 413" fill="none" stroke="#9A2947" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter"/>
+
+      <path d="M577 338H1031V482H577Z" fill="#CFC3B2"/>
+      <path d="M570 330H1015L1024 339V474H570Z" fill="#FFFDF8" stroke="#243858" stroke-width="2"/>
+      <!-- 放大镜用少量切面表现主题发现，与角色的折面道具保持一致。 -->
+      <g transform="translate(118 68) scale(.8)">
+        <path d="M594 353L613 344L632 352L640 371L632 389L613 397L594 389L586 371Z" fill="#9A2947"/>
+        <path d="M601 359L613 353L626 359L631 371L626 383L613 388L601 383L595 371Z" fill="#F2E5D5"/>
+        <path d="M632 386L642 381L660 402L650 411Z" fill="#243858"/>
+      </g>
+      <text x="674" y="378" font-size="33" font-weight="750">主题检索</text>
+      <text x="596" y="423" font-size="25" fill="#5B6370">搜索相关教程、玩法与案例</text>
+      <text x="596" y="455" font-size="25" fill="#5B6370">按需读正文，了解具体做法</text>
+      <path d="M1072 402H1122M1110 391L1122 402L1110 413" fill="none" stroke="#9A2947" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter"/>
+
+      <path d="M1146 340H1536V484H1146Z" fill="#E5DDD0"/>
+      <path d="M1138 330H1508L1528 350V474H1138Z" fill="#FFFDF8" stroke="#D1C7B7" stroke-width="2"/>
+      <path d="M1508 330V350H1528Z" fill="#E5DDD0"/>
+      <path d="M1162 355L1309 352L1312 376L1164 379Z" fill="#E9B937"/>
+      <text x="1171" y="373" font-size="21" font-weight="700">从参考到方案</text>
+      <text x="1164" y="421" font-size="31" font-weight="750">带参考的演示方案</text>
+      <text x="1164" y="455" font-size="23" fill="#5B6370">借鉴已有做法，构思实现方式</text>
     </g>
 
-    <g id="community-material">
-      <rect x="438" y="162" width="328" height="230" rx="10" fill="#FBFAF6" stroke="#D6E0D8" stroke-width="2"/>
-      <rect x="429" y="153" width="328" height="230" rx="10" fill="#FBFAF6" stroke="#D6E0D8" stroke-width="2"/>
-      <rect x="420" y="144" width="328" height="230" rx="10" fill="#FBFAF6" stroke="#397863" stroke-width="2"/>
-      <text x="446" y="194" font-size="26" fill="#397863">02 · 社区知识库</text>
-      <text x="444" y="259" font-size="46" font-weight="600" fill="#193B33">WaytoAGI</text>
-      <path d="M 446 284 H 720" stroke="#D6E0D8" stroke-width="2"/>
-      <text x="446" y="326" font-size="30" fill="#6C7C73">检索资料 · 按需阅读</text>
+    <!-- 第二条：从更新日志发现材料，再按任务关注的主题筛选。 -->
+    <g id="updates-workflow">
+      <path d="M72 558H462V702H72Z" fill="#E5DDD0"/>
+      <path d="M64 548H440L454 562V692H64Z" fill="#FFFDF8" stroke="#D1C7B7" stroke-width="2"/>
+      <path d="M64 548H73V692H64Z" fill="#9A2947"/>
+      <text x="90" y="587" font-size="22" font-weight="700" fill="#9A2947">02 / 看更新、追主题</text>
+      <text x="90" y="632" font-size="30" font-weight="650">“最近有什么新玩法？”</text>
+      <text x="90" y="668" font-size="23" fill="#5B6370">看昨天，或追一段时间的主题</text>
+      <path d="M480 620H530M518 609L530 620L518 631" fill="none" stroke="#9A2947" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter"/>
+
+      <path d="M577 556H1031V700H577Z" fill="#CFC3B2"/>
+      <path d="M570 548H1015L1024 557V692H570Z" fill="#FFFDF8" stroke="#243858" stroke-width="2"/>
+      <!-- 日历：折角和深浅面表达更新记录，不使用品牌标志。 -->
+      <g transform="translate(118 112) scale(.8)">
+        <path d="M591 570H642L652 580V620H591Z" fill="#243858"/>
+        <path d="M598 588H645V613H598Z" fill="#F2E5D5"/>
+        <path d="M642 570V580H652Z" fill="#466080"/>
+        <path d="M602 564V577M630 564V577" stroke="#9A2947" stroke-width="6"/>
+        <path d="M607 599H615M627 599H635" stroke="#9A2947" stroke-width="5"/>
+      </g>
+      <text x="674" y="596" font-size="33" font-weight="750">更新查询</text>
+      <text x="596" y="641" font-size="25" fill="#5B6370">按日期或时间范围读取更新日志</text>
+      <text x="596" y="673" font-size="25" fill="#5B6370">按关注的主题筛选相关内容</text>
+      <path d="M1072 620H1122M1110 609L1122 620L1110 631" fill="none" stroke="#9A2947" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter"/>
+
+      <path d="M1146 558H1536V702H1146Z" fill="#E5DDD0"/>
+      <path d="M1138 548H1508L1528 568V692H1138Z" fill="#FFFDF8" stroke="#D1C7B7" stroke-width="2"/>
+      <path d="M1508 548V568H1528Z" fill="#E5DDD0"/>
+      <path d="M1162 573L1309 570L1312 594L1164 597Z" fill="#E9B937"/>
+      <text x="1171" y="591" font-size="21" font-weight="700">从动态到线索</text>
+      <text x="1164" y="639" font-size="31" font-weight="750">值得跟进的内容清单</text>
+      <text x="1164" y="673" font-size="23" fill="#5B6370">了解新进展，找到下一篇好材料</text>
     </g>
 
-    <g id="sourced-answer">
-      <text x="902" y="207" font-size="26" fill="#397863">03</text>
-      <text x="900" y="265" font-size="46" font-weight="600" fill="#193B33">整理回答</text>
-      <text x="901" y="316" font-size="30" fill="#6C7C73">结合当前任务</text>
-      <text x="901" y="356" font-size="30" fill="#397863">保留原文链接</text>
+    <!-- 第三条：直接读用户给出的社区文章，将方法映射到实际工作。 -->
+    <g id="article-workflow">
+      <path d="M72 776H462V920H72Z" fill="#E5DDD0"/>
+      <path d="M64 766H440L454 780V910H64Z" fill="#FFFDF8" stroke="#D1C7B7" stroke-width="2"/>
+      <path d="M64 766H73V910H64Z" fill="#9A2947"/>
+      <text x="90" y="805" font-size="22" font-weight="700" fill="#9A2947">03 / 读文章、聊应用</text>
+      <text x="90" y="850" font-size="30" font-weight="650">“这篇文章怎么用？”</text>
+      <text x="90" y="886" font-size="23" fill="#5B6370">给一篇社区文章，结合工作聊聊</text>
+      <path d="M480 838H530M518 827L530 838L518 849" fill="none" stroke="#9A2947" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter"/>
+
+      <path d="M577 774H1031V918H577Z" fill="#CFC3B2"/>
+      <path d="M570 766H1015L1024 775V910H570Z" fill="#FFFDF8" stroke="#243858" stroke-width="2"/>
+      <!-- 打开的书页以中线与两个大折面表达正文阅读。 -->
+      <g transform="translate(118 156) scale(.8)">
+        <path d="M589 789L620 795L651 785V830L620 840L589 834Z" fill="#243858"/>
+        <path d="M594 794L620 800V834L594 829Z" fill="#E4D4BC"/>
+        <path d="M620 800L646 792V825L620 834Z" fill="#FFFCF3"/>
+        <path d="M599 805L614 809M599 816L614 820M627 808L639 804M627 819L639 815" stroke="#9A2947" stroke-width="3"/>
+      </g>
+      <text x="674" y="814" font-size="33" font-weight="750">文章阅读</text>
+      <text x="596" y="859" font-size="25" fill="#5B6370">读取指定文章或章节的正文</text>
+      <text x="596" y="891" font-size="25" fill="#5B6370">结合你的问题，提炼方法</text>
+      <path d="M1072 838H1122M1110 827L1122 838L1110 849" fill="none" stroke="#9A2947" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter"/>
+
+      <path d="M1146 776H1536V920H1146Z" fill="#E5DDD0"/>
+      <path d="M1138 766H1508L1528 786V910H1138Z" fill="#FFFDF8" stroke="#D1C7B7" stroke-width="2"/>
+      <path d="M1508 766V786H1528Z" fill="#E5DDD0"/>
+      <path d="M1162 791L1309 788L1312 812L1164 815Z" fill="#E9B937"/>
+      <text x="1171" y="809" font-size="21" font-weight="700">从阅读到应用</text>
+      <text x="1164" y="857" font-size="31" font-weight="750">核心思路与应用建议</text>
+      <text x="1164" y="891" font-size="23" fill="#5B6370">理解文章，把方法带回自己的工作</text>
     </g>
+
+    <!-- 共同价值：主动调用与出处保留，适用于三种入口。 -->
+    <path d="M66 984H1532" stroke="#D1C7B7" stroke-width="2"/>
+    <path d="M70 1009L81 1020L70 1031L59 1020Z" fill="#9A2947"/>
+    <text x="96" y="1030" font-size="25" fill="#5B6370">Agent 可按任务需要主动检索，你也可以指定入口</text>
+    <path d="M1136 1005L1531 1002L1535 1039L1139 1042Z" fill="#E9B937"/>
+    <text x="1152" y="1030" font-size="25" font-weight="700">结合当前任务 · 保留原文链接</text>
   </g>
 </svg>

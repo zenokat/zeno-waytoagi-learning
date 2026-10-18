@@ -6,7 +6,7 @@
 
 本仓库由 Zeno 开发，提供 `zeno-waytoagi-search` Skill。使用时不必先说出 WaytoAGI 的名字，也不必明确要求搜索资料；任务中需要补充 AI 知识、工具玩法或实践经验时，Agent 可主动检索。你也可以指定它查资料、看社区更新或读取文章链接。
 
-![工作方式示意：根据当前任务的信息需求，由 Agent 检索与阅读 WaytoAGI 社区资料，再结合任务整理回答并保留原文链接。](assets/readme/workflow.svg)
+![三条工作流：寻找玩法，经主题检索形成方案；了解动态，经更新查询得到精选清单；分享文章，经正文阅读提炼应用建议。三个入口封装在同一个 zeno-waytoagi-search Skill 中，结果均保留原文链接。](assets/readme/workflow.svg)
 
 ## 关于 WaytoAGI
 
@@ -15,6 +15,14 @@
 这里既有适合入门的学习路径、教程和工具介绍，也有创作者分享的应用案例、工作流与实践经验。社区还通过共学、活动和共创项目，让学习者交流做法、留下可供他人参考的资料。本 Skill 接入其中的飞书知识库，让这些内容成为 Agent 推进各类任务时可检索、可引用的材料。
 
 [打开知识库](https://waytoagi.feishu.cn/wiki/QPe5w5g7UisbEkkow8XcDmOpn8e) · [了解社区](https://about.waytoagi.com/)
+
+## 安装
+
+复制这句话，交给支持 Skill 的 Agent：
+
+```text
+帮我安装并配置这个 Skill：https://github.com/zenokat/zeno-waytoagi-search/tree/main/skills/zeno-waytoagi-search
+```
 
 ## 你可以这样用
 
@@ -113,14 +121,6 @@
 > ……
 >
 > 我们可以从你的一个真实工作动作开始拆：它现在要花多久、输入材料是什么、最终交付给谁、你如何判断结果合格。你愿意先选一个每周至少会做一次、最让你觉得重复的任务吗？我可以和你一起把它改写成一段适合交给 Codex 的任务说明，并一起定义第一轮该检查什么。
-
-## 安装
-
-复制这句话，交给支持 Skill 的 Agent：
-
-```text
-帮我安装并配置这个 Skill：https://github.com/zenokat/zeno-waytoagi-search/tree/main/skills/zeno-waytoagi-search
-```
 
 ## 反馈与交流
 
