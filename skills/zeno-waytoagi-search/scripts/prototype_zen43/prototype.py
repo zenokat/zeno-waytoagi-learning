@@ -251,8 +251,8 @@ class Prototype:
         return search(self, query, since, until, cursor)
 
     def summaries(self, articles):
-        """按月从近往远查找 articles 的原摘要；共用七天历史缓存，找齐即停。"""
-        from progressive_search import summaries
+        """读取 articles 的原摘要；先复用记录，过期定点刷新，陌生文章才按月查找。"""
+        from summary_reader import summaries
         return summaries(self, articles)
 
     def structure(self, article, section=None, depth=1):

@@ -60,6 +60,8 @@ def command_purpose(arguments, method):
     if scope == "keyword":
         return "按 OR 关键词查找文内命中块或容器节选，随后补齐所属章节链。"
     if scope == "range":
+        if method == "summaries":
+            return "按已保存的日志条目位置刷新这一条原摘要，核对块 ID 与文章身份；不延长整月缓存有效期。"
         return "读取计算后的完整章节区间，取得 Markdown 正文。" if options.get("--doc-format") == "markdown" else "按命中的顶层容器标识补读完整容器，避免只交付表格或容器节选。"
     if options.get("--doc-format") == "markdown":
         return "读取全文 Markdown，保留文章标题与正文结构，随后处理文内图片。"
@@ -104,9 +106,9 @@ def run_demo(output):
     cache = output / "PROTOTYPE-wipe-me-cache"
     scenarios, checks = [], {}
 
-    def capture(name, explanation, arguments, method, **kwargs):
+    def capture(name, explanation, arguments, method, cache_override=None, **kwargs):
         """用独立原型上下文执行 method；输入说明、显示参数和函数参数，返回结果与上下文。"""
-        p = Prototype(cache)
+        p = Prototype(cache_override or cache)
         result = getattr(p, method)(**kwargs)
         total_seconds = round(time.monotonic() - p.input_started, 3)
         write_json(p.run_dir / "calls.json", p.calls)
@@ -165,14 +167,41 @@ def run_demo(output):
     assert len(expired.calls) == 1 and not expired.sources[0]["cache_hit"]
     checks["历史缓存"] = "跨主题命中时 0 次日志请求；模拟七天到期后真实重读 1 次目标月份"
 
-    summary, summary_context = capture("摘要读取", "共用月级日志缓存，从近往远找齐指定文章即停；当月正常请求、历史月份七天内复用。",
+    summary, summary_context = capture("摘要读取", "按文章 token 直接匹配检索已取得的原摘要；包括当月记录，无须重新读取日志。",
         {"articles": [search["results"][0]["article_id"], latest["article_id"]]}, "summaries",
         articles=[search["results"][0]["article_id"], latest["article_id"]])
     assert all(r["status"] == "found" for r in summary["results"])
     assert summary["results"][1]["summary"] == latest["summary"]
-    assert [s["month"] for s in summary_context.sources] == ["2026-10", "2026-09"]
-    assert not summary_context.sources[0]["cache_hit"] and summary_context.sources[1]["cache_hit"]
-    checks["摘要共用策略"] = "当前月正常请求；9 月复用缓存，找齐即停，未读 2025 年；原摘要逐字相等"
+    assert summary_context.calls == [] and summary_context.diagnostics["months_read"] == []
+    checks["摘要缓存直达"] = "当月和历史原摘要均按 token 直接命中，0 次请求；原摘要逐字相等"
+
+    cached_month = json.loads(cache_path.read_text())
+    cached_month["fetched_at"] = time.time() - HISTORY_TTL_SECONDS - 1
+    write_json(cache_path, cached_month)
+    month_before_refresh = cache_path.read_text()
+    refreshed, refreshed_context = capture("摘要过期定点刷新", "仅模拟缓存年龄过期；按保存的日志块直接读取这一条摘要，不读取整月，不更新整月期限。",
+        {"articles": [latest["article_id"]], "演示前置": "9 月缓存年龄设为七天以前"}, "summaries",
+        articles=[latest["article_id"]])
+    assert len(refreshed_context.calls) == 1 and "range" in refreshed_context.calls[0]["arguments"]
+    assert refreshed["results"][0]["summary"] == latest["summary"]
+    assert cache_path.read_text() == month_before_refresh
+    _, refreshed_reuse = capture("刷新后再读摘要", "只复用刚刷新的这一条摘要，零请求；同月其他旧记录仍维持原到期时间。",
+        {"articles": [latest["article_id"]]}, "summaries", articles=[latest["article_id"]])
+    assert refreshed_reuse.calls == []
+    checks["摘要定点刷新"] = "过期后 1 次 range；整月缓存未改动；再读 0 次请求"
+
+    old_article = json.loads(Path(__file__).with_name("summary-lookup-samples.json").read_text())[0]
+    cold_cache = output / "PROTOTYPE-wipe-me-summary-cold"
+    cold_summary, cold_context = capture("陌生旧文章摘要", "独立空缓存，仅输入文章 token；没有任何日志位置，只能逐月向前查找。这是仍存在的性能缺口。",
+        {"articles": [old_article["article_id"]], "演示前置": "独立空缓存，不提供已知日期或日志块"}, "summaries",
+        cache_override=cold_cache, articles=[old_article["article_id"]])
+    assert cold_summary["results"][0]["summary"] == old_article["summary"]
+    assert cold_context.diagnostics["months_read"][-1] == old_article["date"][:7]
+    _, old_reused = capture("旧文章再次读摘要", "同一文章已经查到，直接按 token 取缓存，跳过所有较新的月份。",
+        {"articles": [old_article["article_id"]]}, "summaries", cache_override=cold_cache,
+        articles=[old_article["article_id"]])
+    assert old_reused.calls == []
+    checks["陌生文章缺口"] = f"旧文章首次 {len(cold_context.calls)} 次读取，再次 0 次；首次没有假装已知日志位置"
 
     # 沿同一真实会话继续，确认原生下一页确实在需要时才发生，而非仅做本地切片。
     cursor, seen, continuation_evidence = second["next_cursor"], {r["article_id"] for r in search["results"] + second["results"]}, []

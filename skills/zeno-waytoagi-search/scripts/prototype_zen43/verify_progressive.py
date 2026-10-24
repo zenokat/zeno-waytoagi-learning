@@ -17,7 +17,7 @@ from monthly_logs import HISTORY_TTL_SECONDS, MonthlyLogs
 def log_xml(month, tokens):
     """将 month 与 tokens 构造成日期日志 XML；返回保持真实引用格式的小样本。"""
     year, number = map(int, month.split("-"))
-    rows = ''.join(f'<li>《<cite doc-id="{token}" file-type="wiki" title="{token}"/>》原摘要 {token}</li>' for token in tokens)
+    rows = ''.join(f'<li id="entry{token}">《<cite doc-id="{token}" file-type="wiki" title="{token}"/>》原摘要 {token}</li>' for token in tokens)
     return f'<h2>{year} 年 {number} 月</h2><h3>{number} 月 20 日</h3><ul>{rows}</ul>'
 
 
@@ -50,11 +50,15 @@ class ProgressiveChecks(unittest.TestCase):
                                           "summary_highlighted": "片段 "+t} for t in tokens],
                              "has_more": not later, "page_token": None if later else "next"}}
         block = args[args.index("--start-block-id") + 1]
+        if args[args.index("--scope") + 1] == "range":
+            token = block.removeprefix("entry")
+            content = f'<fragment><excerpt top-block-id="container"><ul><li id="{block}">《<cite doc-id="{token}" file-type="wiki" title="{token}"/>》刷新摘要 {token}</li></ul></excerpt></fragment>'
+            return {"data": {"document": {"content": content, "revision_id": 2}}}
         if block == self.anchor["recent"]["block_id"]:
             content = "<h1>近 7 日更新日志</h1>"
         else:
             month = self.by_id[block]
-            tokens = ["a", "b", "c", "d", "late"] if month == "2026-10" else ["september"] if month == "2026-09" else []
+            tokens = ["a", "b", "c", "d", "late"] if month == "2026-10" else ["september", "peer"] if month == "2026-09" else ["oldarticle"] if month == "2025-06" else []
             content = log_xml(month, tokens)
         return {"data": {"document": {"content": content, "revision_id": 1}}}
 
@@ -99,15 +103,80 @@ class ProgressiveChecks(unittest.TestCase):
         self.assertTrue(all("outline" not in a and "full" not in a for a in self.requests))
 
     def test_current_always_requested_and_summaries_share_history(self):
-        """当前月份跨调用必须请求；摘要找到指定文章后停止，历史月直接共用缓存。"""
+        """新检索的当前月正常请求，但随后摘要复用已取得记录，不再读取当前月份。"""
         self.context().search(since="2026-09-01", until="2026-09-30")
         for _ in range(2):
+            search = self.context()
+            search.search(query="RAG")
+            self.assertEqual(len(search.calls), 3)
             p = self.context()
             result = p.summaries(["a", "september"])
             self.assertEqual([r["summary"] for r in result["results"]], ["原摘要 a", "原摘要 september"])
-            self.assertEqual([s["month"] for s in p.sources], ["2026-10", "2026-09"])
-            self.assertEqual([s["cache_hit"] for s in p.sources], [False, True])
-            self.assertEqual(len(p.calls), 2)
+            self.assertEqual(p.calls, [])
+
+    def test_old_cached_article_does_not_scan_newer_months(self):
+        """旧文章已经在有效缓存中，即使从未检索它也应零请求返回；重复输入保留对应关系。"""
+        MonthlyLogs(self.context()).read("2025-06")
+        p = self.context()
+        result = p.summaries(["oldarticle", "oldarticle"])
+        self.assertEqual([r["summary"] for r in result["results"]], ["原摘要 oldarticle"] * 2)
+        self.assertEqual(p.calls, [])
+
+    def test_valid_record_precedes_expired_locator(self):
+        """已有有效原摘要时直接返回，不因另一份过期记录日期较新而先发请求。"""
+        with patch("time.time", return_value=1000000):
+            logs = MonthlyLogs(self.context())
+            old = logs.read("2026-10")[0]
+        with patch("time.time", return_value=1000000 + HISTORY_TTL_SECONDS):
+            logs.read("2026-09")
+            path = logs.cache_path("2026-09")
+            content = json.loads(path.read_text())
+            content["records"].append({**old, "date": "2026-09-20", "summary": "有效范围内摘要"})
+            path.write_text(json.dumps(content))
+            p = self.context()
+            result = p.summaries(["a"])
+        self.assertEqual(result["results"][0]["summary"], "有效范围内摘要")
+        self.assertEqual(p.calls, [])
+
+    def test_expired_summary_refreshes_only_its_block(self):
+        """满七天只刷新目标块，随后零请求复用；不延长整月或其他文章的有效期。"""
+        with patch("time.time", return_value=1000000):
+            logs = MonthlyLogs(self.context())
+            logs.read("2026-09")
+        before = logs.cache_path("2026-09").read_text()
+        with patch("time.time", return_value=1000000 + HISTORY_TTL_SECONDS):
+            p = self.context()
+            result = p.summaries(["september", "september"])
+            self.assertEqual(result["results"][0]["summary"], "刷新摘要 september")
+            self.assertEqual(len(p.calls), 1)
+            self.assertIn("range", p.calls[0]["arguments"])
+            reused = self.context()
+            reused.summaries(["september"])
+            self.assertEqual(reused.calls, [])
+            other = self.context()
+            other.summaries(["peer"])
+            self.assertEqual(len(other.calls), 1)
+            self.assertIn("entrypeer", other.calls[0]["arguments"])
+        self.assertEqual(logs.cache_path("2026-09").read_text(), before)
+
+    def test_unfamiliar_old_article_scans_until_found(self):
+        """只有完全陌生 token 才逐月查找；首次需要十八次读取，再次调用零请求。"""
+        p = self.context()
+        result = p.summaries(["oldarticle"])
+        self.assertEqual(result["results"][0]["summary"], "原摘要 oldarticle")
+        self.assertEqual(len(p.calls), 18)
+        reused = self.context()
+        reused.summaries(["oldarticle"])
+        self.assertEqual(reused.calls, [])
+
+    def test_wrong_block_identity_is_not_returned_as_summary(self):
+        """过期位置返回了别的文章时明确失败，不写入成功缓存或悄悄逐月降级。"""
+        with patch("time.time", return_value=1000000):
+            MonthlyLogs(self.context()).read("2026-09")
+        response = {"data": {"document": {"content": '<fragment><li id="entryseptember">《<cite doc-id="other" file-type="wiki" title="other"/>》别人的摘要</li></fragment>'}}}
+        with patch("time.time", return_value=1000000 + HISTORY_TTL_SECONDS), patch.object(daily, "run_cli", return_value=response):
+            with self.assertRaisesRegex(ValueError, "身份"):
+                self.context().summaries(["september"])
 
     def test_damaged_cache_is_refetched(self):
         """缓存损坏时重取目标月份，不将损坏当作有效空结果。"""
