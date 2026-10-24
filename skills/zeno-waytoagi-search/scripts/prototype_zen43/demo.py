@@ -1,7 +1,7 @@
 """运行 ZEN-43 真实只读演示与针对性核对，生成可双击的自包含 HTML 结果页。
 
 一个命令运行五工具主要路径。所有断言只核对本次实际样本，不替代 ZEN-44。
-结果正文和原生证据留在临时目录；仓库只保存可重放代码及精简事实账本。
+全文和原生证据留在临时目录；审阅页保留检索片段、原摘要及全文检索的完整业务 JSON。
 """
 
 import argparse
@@ -30,11 +30,6 @@ def assert_images(result):
 def compact_result(result):
     """缩短用于便携 HTML 展示的 result，保留结构和计数；返回副本，完整结果仍存于本地证据。"""
     result = json.loads(json.dumps(result))
-    if "hits" in result:
-        result["hit_count"] = len(result["hits"])
-        result["expanded_containers"] = sum(h["container_expanded"] for h in result["hits"])
-        for hit in result["hits"]:
-            hit.pop("snippet_xml", None)
     if "results" in result:
         for row in result["results"]:
             if "summary" in row:
@@ -102,8 +97,8 @@ def run_demo(output):
                            "elapsed_seconds": call["elapsed_seconds"],
                            "content_chars": call["content_chars"]})
         scenarios.append({"name": name, "explain": explanation, "input": arguments,
-                          "output": result if method in {"search", "summaries"} else compact_result(result),
-                          "exact_output": method in {"search", "summaries"}, "diagnostics": p.diagnostics,
+                          "output": result if method in {"search", "summaries", "locate"} else compact_result(result),
+                          "exact_output": method in {"search", "summaries", "locate"}, "diagnostics": p.diagnostics,
                           "native": native, "local_result": result_path,
                           "total_seconds": total_seconds})
         print(name + "完成", flush=True)
@@ -235,7 +230,7 @@ def run_demo(output):
     assert children and all(len(u["parents"]) == 1 for u in children)
     checks["章节层级"] = "H1 → H3 识别为父子两层"
 
-    located, _ = capture("全文检索", "OR 命中附完整章节链；表格 excerpt 会补为整表。此页不内嵌文章全文。",
+    located, _ = capture("全文检索", "核对问题：片段是否足以判断相关性，章节链能否指导下一步阅读？本页保留全部命中片段；OR 是任一关键词命中。",
         {"article": SAMPLE, "keywords": ["MarkItDown", "MinerU"]}, "locate", article=SAMPLE, keywords=["MarkItDown", "MinerU"])
     assert all(h["section_chain"] for h in located["hits"])
     assert any(h["container_expanded"] for h in located["hits"])
@@ -243,10 +238,33 @@ def run_demo(output):
         if h["container_expanded"]:
             assert "<excerpt" not in h["snippet_xml"] and "MarkItDown" in h["snippet_xml"] and "MinerU" in h["snippet_xml"]
     # 单分支与 OR 的顶层命中集合比较，避免把嵌套节点数量说成独立命中数量。
-    single_a = Prototype(cache).locate(SAMPLE, ["MarkItDown"])
-    single_b = Prototype(cache).locate(SAMPLE, ["MinerU"])
+    single_a, _ = capture("单词 MarkItDown", "单独查询 MarkItDown；可与 OR 场景对照，普通段落、代码与标题保留原生命中块。",
+        {"article": SAMPLE, "keywords": ["MarkItDown"]}, "locate", article=SAMPLE, keywords=["MarkItDown"])
+    single_b, _ = capture("单词 MinerU", "单独查询 MinerU；同一容器内的多处命中合并为一个顶层单位。",
+        {"article": SAMPLE, "keywords": ["MinerU"]}, "locate", article=SAMPLE, keywords=["MinerU"])
+    assert located["revision"] == single_a["revision"] == single_b["revision"]
     assert {h["block_id"] for h in located["hits"]} == {h["block_id"] for h in single_a["hits"] + single_b["hits"]}
     checks["OR 与容器"] = f"{len(located['hits'])} 个顶层命中单位；并集相等，表格补全"
+
+    heading, _ = capture("仅命中标题", "输入本篇唯一的章节标题；只返回命中标题，保留父章到子章的完整链，不自动展开整章正文。",
+        {"article": SAMPLE, "keywords": ["安装 MarkItDown"]}, "locate", article=SAMPLE, keywords=["安装 MarkItDown"])
+    assert len(heading["hits"]) == 1 and len(heading["hits"][0]["section_chain"]) == 2
+    assert xml_root(heading["hits"][0]["snippet_xml"])[0].tag == "h3"
+    assert "Python" not in heading["hits"][0]["snippet_xml"]
+    checks["标题与开篇定位"] = "标题只返回自身且保留两级章节链；OR 样本的开篇命中可用 @opening 读取"
+    assert any(h["read_unit"] == "@opening" for h in located["hits"])
+
+    table, _ = capture("表格单行命中", "仅匹配一行中的文字，内部仍补齐整张表，包括表头和另一工具行；返回量可能大于原生命中节选。",
+        {"article": SAMPLE, "keywords": ["轻量、快速，适合批量转换"]}, "locate", article=SAMPLE, keywords=["轻量、快速，适合批量转换"])
+    assert len(table["hits"]) == 1 and table["hits"][0]["container_expanded"]
+    table_xml = xml_root(table["hits"][0]["snippet_xml"])
+    assert len(list(table_xml.iter("tr"))) == 3 and "MinerU" in table["hits"][0]["snippet_xml"]
+    checks["表格单行补全"] = "原生单行节选补为三行完整表格，含表头及另一工具行，不额外返回表外正文"
+
+    empty, empty_context = capture("全文检索无命中", "使用特定不存在的关键词，真实服务返回空内容后即结束；只做一次 keyword 请求，不再读取全文。",
+        {"article": SAMPLE, "keywords": ["ZEN43_NO_MATCH_20261024"]}, "locate", article=SAMPLE, keywords=["ZEN43_NO_MATCH_20261024"])
+    assert empty["hits"] == [] and len(empty_context.calls) == 1
+    checks["全文检索无命中"] = "真实空结果只发起 1 次 keyword 请求，没有全文预读"
 
     parent = next(u for u in structure["units"] if u["id"] == children[0]["parents"][0])
     body, _ = capture("正文读取", "选择父章和其中子章，重叠只输出一次；只获取选区里的图片并嵌入本地路径。",

@@ -269,12 +269,17 @@ class Prototype:
 
     def locate(self, article, keywords):
         """在 article 中以 keywords 的 OR 查询定位；补齐章节链与 excerpt 容器，返回所有本次命中。"""
+        hits = self.fetch(article, "keyword", keyword="|".join(keywords), context_before=0, context_after=0)
+        root = xml_root(hits["content"])
+        result = {"article": article, "revision": hits["revision_id"], "keywords": keywords, "hits": [],
+                  "completeness": "本次原生返回集；不保证服务端任意大文档无上限"}
+        # 原生明确返回空内容时没有待补的位置；不为无命中查询再读取全文。
+        if not hits["content"].strip() or not len(root):
+            return result
         full = self.fetch(article)
         blocks, units, positions = section_model(full["content"])
-        hits = self.fetch(article, "keyword", keyword="|".join(keywords), context_before=0, context_after=0)
         if hits["revision_id"] != full["revision_id"]:
             raise ValueError("定位时文章发生更新")
-        root = xml_root(hits["content"])
         output, seen = [], set()
         for element in top_blocks(root):
             container_id = element.get("top-block-id") if element.tag == "excerpt" else None
@@ -295,8 +300,8 @@ class Prototype:
             output.append({"block_id": block_id, "snippet_xml": content, "container_expanded": bool(container_id),
                            "section_chain": [{"id": u["id"], "title": u["title"]} for u in chain],
                            "read_unit": chain[-1]["id"] if chain else "@document"})
-        return {"article": article, "revision": full["revision_id"], "keywords": keywords, "hits": output,
-                "completeness": "本次原生返回集；不保证服务端任意大文档无上限"}
+        result["hits"] = output
+        return result
 
     def read(self, article, sections=None, start=None, end=None):
         """读取 article 全文/多章/完整章节范围；返回 Markdown 绝对路径、实际选区和本地图片信息。"""
@@ -393,8 +398,8 @@ def main():
             result = prototype.read(args.article, args.sections, args.start, args.end)
         write_json(prototype.run_dir / "calls.json", prototype.calls)
         write_json(prototype.run_dir / "diagnostics.json", prototype.diagnostics)
-        # 已迭代的检索和摘要入口直接交付业务 JSON，诊断留本地，避免占用 Agent 阅读预算。
-        output = result if args.tool in {"search", "summaries"} else {"result": result, "evidence_dir": str(prototype.run_dir)}
+        # 已迭代的三个入口直接交付业务 JSON，诊断留本地，避免占用 Agent 阅读预算。
+        output = result if args.tool in {"search", "summaries", "locate"} else {"result": result, "evidence_dir": str(prototype.run_dir)}
         print(json.dumps(output, ensure_ascii=False, indent=2))
         return 0
     except (ValueError, KeyError, OSError, ET.ParseError) as error:

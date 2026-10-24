@@ -1,0 +1,94 @@
+{
+  "article": "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+  "revision": 71,
+  "observed_at": "2026-10-24T20:52:09+08:00",
+  "calls": [
+    {
+      "arguments": [
+        "docs",
+        "+fetch",
+        "--doc",
+        "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+        "--scope",
+        "outline",
+        "--doc-format",
+        "xml",
+        "--detail",
+        "with-ids",
+        "--max-depth",
+        "-1",
+        "--as",
+        "user",
+        "--format",
+        "json"
+      ],
+      "seconds": 0.581,
+      "elapsed_seconds": 0.582,
+      "revision": 71,
+      "content_chars": 1062,
+      "comments_removed": 0
+    },
+    {
+      "arguments": [
+        "docs",
+        "+fetch",
+        "--doc",
+        "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+        "--scope",
+        "full",
+        "--doc-format",
+        "xml",
+        "--detail",
+        "with-ids",
+        "--max-depth",
+        "0",
+        "--as",
+        "user",
+        "--format",
+        "json"
+      ],
+      "seconds": 0.54,
+      "elapsed_seconds": 1.124,
+      "revision": 71,
+      "content_chars": 15248,
+      "comments_removed": 0
+    },
+    {
+      "arguments": [
+        "docs",
+        "+fetch",
+        "--doc",
+        "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+        "--scope",
+        "keyword",
+        "--doc-format",
+        "xml",
+        "--detail",
+        "with-ids",
+        "--max-depth",
+        "-1",
+        "--keyword",
+        "ZEN43_NO_MATCH_20261024",
+        "--context-before",
+        "0",
+        "--context-after",
+        "0",
+        "--as",
+        "user",
+        "--format",
+        "json"
+      ],
+      "seconds": 0.495,
+      "elapsed_seconds": 1.621,
+      "revision": 71,
+      "content_chars": 0,
+      "comments_removed": 0
+    }
+  ],
+  "observations": [
+    "outline 返回 18 个标题及 ID，不带普通正文块归属。",
+    "full max-depth=0 与既有同修订 full max-depth=-1 的 document 完全一致，均为 15248 字符。",
+    "无命中 keyword 返回空字符串，无 tips。"
+  ],
+  "limits": "仅为该 PDF 样本；不能推导全库表现、服务端扫描成本或固定性能。"
+}
