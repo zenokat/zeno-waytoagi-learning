@@ -51,6 +51,7 @@ python3 skills/zeno-waytoagi-search/scripts/prototype_zen43/prototype.py read
 - `monthly_logs.py`：跨主题共用的月级读取与七天缓存；不检查整年修订号。
 - `verify_progressive.py`：不联网核对渐进续查、缓存期限、月初迁入与原摘要行为。
 - `demo.py`：真实场景重放、样本核对及自包含结果页生成。
+- `demo_template.html`：展示模板，按五个工具组织场景、结果卡片、调用时间线和核对结论；生成的 demo.html 仍是无需额外文件的独立回放。
 - `demo.html`：本次已执行的回放；检索与摘要展示实际业务 JSON，保留命中片段及原摘要，内部诊断单独展开。其他三个工具仍展示精简结果，不内嵌文章全文或评论。
 - `observed-checks.json`：本次机器可读核对结果，不替代 Linear 中的解释和限制。
 - `timings.json`：逐场景、逐命令的作用说明、单条与累计耗时，以及工具完整返回耗时；运行 `demo.py` 会重新生成。

@@ -1,0 +1,100 @@
+<!doctype html>
+<!-- 可丢弃原型回放模板：按工具组织真实场景。生成时嵌入证据，无外部资源或网络调用。 -->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WaytoAGI · 工具原型审阅</title>
+<style>
+:root{color-scheme:light;--ink:#243b3b;--muted:#6b7b79;--accent:#236858;--line:#dde5df;--paper:#fff;--wash:#f3f5f0}
+*{box-sizing:border-box}body{margin:0;background:var(--wash);color:var(--ink);font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}button,a,summary{-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #5a9c87;outline-offset:4px}button:disabled{opacity:.38;cursor:default}h1,h2,h3,p{margin:0}h1{font-size:30px;letter-spacing:-1px;font-weight:650}h2{font-size:25px;letter-spacing:-.5px}h3{font-size:15px}a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:4px}pre{margin:12px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;background:#f4f6f3;border:1px solid #e7ece6;border-radius:10px;padding:16px;max-height:480px;overflow:auto}summary{cursor:pointer;list-style-position:outside;margin-left:16px;font-weight:550}details>summary::marker{color:var(--muted)}details[open]>summary{margin-bottom:16px}.muted{color:var(--muted)}.small{font-size:12px}.eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);font-weight:700}.pill{display:inline-flex;align-items:center;border:1px solid #d6e4db;border-radius:20px;padding:4px 11px;background:#edf5ef;color:var(--accent);font-size:12px}.page{max-width:1440px;margin:auto;padding:34px 40px 60px}.masthead{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-bottom:27px;border-bottom:1px solid var(--line)}.masthead h1{margin:5px 0}.recording{text-align:right;white-space:nowrap}.recording p{margin-top:7px}.workspace{display:grid;grid-template-columns:218px minmax(0,1fr);gap:36px;padding-top:30px}.sidebar{position:sticky;top:24px;align-self:start}.sidebar-label{font-size:11px;letter-spacing:2px;color:var(--muted);margin-bottom:14px}.tool-button{display:flex;align-items:center;text-align:left;gap:12px;width:100%;padding:14px 12px;margin-bottom:7px;border:1px solid transparent;border-radius:12px;background:transparent;color:var(--ink)}.tool-button:hover{background:#e9eee7}.tool-button[aria-current="true"]{background:var(--ink);color:white;box-shadow:0 5px 16px #243b3b12}.tool-number{font:12px ui-monospace,monospace;opacity:.6}.tool-title{font-size:14px;font-weight:600}.tool-count{display:block;font-size:11px;opacity:.65}.sidebar-note{border-top:1px solid var(--line);margin-top:22px;padding-top:18px;font-size:12px;color:var(--muted);line-height:1.9}.group-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}.group-heading p{margin-top:5px}.scenario-nav{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0}.scenario-button{border:1px solid var(--line);border-radius:8px;background:#fff;padding:7px 12px;color:#60706b;font-size:12px}.scenario-button:hover{border-color:#8cae9b}.scenario-button[aria-current="true"]{border-color:var(--accent);background:#e4efe8;color:var(--accent);font-weight:650}.scenario{background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 8px 24px #253e3210}.scenario-head{padding:26px 28px 22px;border-bottom:1px solid var(--line)}.scenario-head h2{margin:7px 0 9px;font-size:21px}.scenario-head p{max-width:820px}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;background:#fafbf8;border-bottom:1px solid var(--line);padding:18px 28px}.metric-label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}.metric-value{font:600 23px/1.4 ui-monospace,monospace;letter-spacing:-.7px}.metric-value small{font:12px -apple-system,sans-serif;letter-spacing:0;margin-left:6px;color:var(--muted)}.content-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.3fr)}.input-panel{padding:25px 25px 28px 28px;border-right:1px solid var(--line)}.result-panel{padding:25px 28px;min-width:0}.section-label{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:14px}.result-card{padding:17px 0;border-bottom:1px solid #e8ece7}.result-card:first-child{padding-top:0}.result-card:last-child{border-bottom:0}.result-card h3{font-size:15px;line-height:1.8}.result-date{color:var(--accent);font:11px ui-monospace,monospace;margin-bottom:5px}.result-card p{margin-top:8px;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}.snippet{color:#6a7872;padding-left:12px;border-left:2px solid #d3e1d7}.result-state{margin:12px 0 18px;font-size:12px;background:#f0f5ef;border-radius:8px;padding:10px 12px}.json-details{margin-top:18px;font-size:12px}.trace-panel{border-top:1px solid var(--line);padding:22px 28px}.trace-note{font-size:12px;color:var(--muted);max-width:800px}.command-step{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;padding-top:24px}.command-number{border:1px solid #d5e3d8;background:#eff6ef;color:var(--accent);width:28px;height:28px;border-radius:50%;text-align:center;font:12px/26px ui-monospace,monospace}.command-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px}.command-title strong{font-size:13px}.command-time{font-size:12px;color:var(--accent);white-space:nowrap}.command-step p{font-size:13px;margin:6px 0}.command-step details{margin-top:10px;font-size:12px}.diagnostics{margin-top:24px;border-top:1px solid var(--line);padding-top:16px;font-size:12px}.review-checks{margin-top:20px;background:#eaf0e7;border-radius:12px;padding:18px 22px;font-size:13px}.check-row{display:grid;grid-template-columns:130px minmax(0,1fr);gap:14px;border-top:1px solid #d8e2d5;padding:12px 0}.check-row:first-child{border-top:0}.check-row dt{font-weight:600}.check-row dd{margin:0;color:#5f7063}.step-footer{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:18px}.step-buttons{display:flex;gap:8px}.quiet-button{background:transparent;border:1px solid #ccd8cb;border-radius:8px;padding:7px 13px;font-size:12px;color:var(--ink)}.footnote{margin-top:30px;font-size:11px;color:var(--muted);line-height:1.9}.empty{padding:18px 0;color:var(--muted);font-size:13px}.structure-row{padding:9px 0;border-bottom:1px solid #edf0eb;font-size:13px;overflow-wrap:anywhere}.path{font:12px/1.8 ui-monospace,monospace;overflow-wrap:anywhere}
+@media(min-width:1250px){.page{padding-left:55px;padding-right:55px}}
+@media(max-width:950px){.workspace{grid-template-columns:175px minmax(0,1fr);gap:22px}.page{padding:24px}.content-grid{grid-template-columns:1fr}.input-panel{border-right:0;border-bottom:1px solid var(--line)}.input-panel pre{max-height:210px}.metric-value{font-size:20px}}
+@media(max-width:650px){.page{padding:20px 16px}.masthead{display:block}.recording{text-align:left;margin-top:15px}.workspace{display:block;padding-top:20px}.sidebar{position:static}.sidebar-label,.sidebar-note{display:none}#tools{display:flex;gap:8px;overflow:auto;padding:2px 2px 12px}.tool-button{width:auto;flex-shrink:0;margin:0;padding:9px 12px}.tool-number,.tool-count{display:none}.tool-title{font-size:12px}.group-heading{margin-top:14px}.group-heading h2{font-size:22px}.group-heading p{font-size:12px}.scenario-head,.trace-panel,.input-panel,.result-panel{padding:20px}.metrics{padding:16px 20px;gap:8px}.metric-value{font-size:18px}.scenario-nav{gap:6px;margin:16px 0}.scenario-button{font-size:11px;padding:6px 9px}.command-title{display:block}.command-time{display:block;margin-top:4px}.check-row{grid-template-columns:1fr;gap:4px}.step-footer{align-items:flex-start}.footnote{margin-top:22px}}
+</style>
+</head>
+<body>
+<div class="page">
+<header class="masthead"><div><div class="eyebrow">WaytoAGI / Prototype</div><h1>工具原型审阅</h1><p class="muted small">按工具查看真实输入、返回结果与内部调用。</p></div><div class="recording"><span class="pill">真实调用 · 离线回放</span><p id="recorded-at" class="muted small"></p></div></header>
+<div class="workspace">
+<aside class="sidebar"><p class="sidebar-label">五个工具</p><nav id="tools" aria-label="工具分类"></nav><p class="sidebar-note">先选择工具，再查看具体场景。<br>场景可独立审阅；涉及缓存的场景会注明运行前置。<br><br>切换页面不会重新联网。</p></aside>
+<main>
+<div class="group-heading"><div><h2 id="group-name"></h2><p id="group-description" class="muted"></p></div><span id="group-count" class="pill"></span></div>
+<nav id="scenarios" class="scenario-nav" aria-label="当前工具的演示场景"></nav>
+<article class="scenario" aria-labelledby="name">
+<header class="scenario-head"><div id="status" class="eyebrow"></div><h2 id="name"></h2><p id="explain" class="muted"></p></header>
+<div class="metrics" aria-label="本次运行概况"><div><span class="metric-label">完整返回耗时</span><span id="total-time" class="metric-value"></span></div><div><span class="metric-label">外部请求</span><span id="request-count" class="metric-value"></span></div><div><span id="result-metric-label" class="metric-label">本次结果</span><span id="result-count" class="metric-value"></span></div></div>
+<div class="content-grid"><section class="input-panel"><h3 class="section-label">输入与场景前置</h3><pre id="input"></pre><p class="muted small" style="margin-top:14px">前置说明用于解释这次演示，不属于工具参数。</p></section><section class="result-panel"><h3 class="section-label">本次取得的结果</h3><div id="readable"></div><details class="json-details"><summary id="output-label">实际返回给 Agent 的 JSON</summary><pre id="output"></pre></details></section></div>
+<section class="trace-panel"><details id="trace"><summary>真实内部动作与调用参数</summary><p class="trace-note">每个场景独立计时。累计耗时从本次输入开始，到该 command 返回结果为止，包含此前命令与本地处理；顶部显示完整返回耗时。</p><div id="native"></div><details class="diagnostics"><summary>内部匹配与缓存记录（不交给 Agent）</summary><pre id="diagnostics"></pre></details></details></section>
+</article>
+<details class="review-checks"><summary>这个工具已核对的行为</summary><dl id="checks"></dl></details>
+<div class="step-footer"><span id="step-label" class="muted small" aria-live="polite"></span><div class="step-buttons"><button id="previous" class="quiet-button" type="button">上一个场景</button><button id="next" class="quiet-button" type="button">下一个场景</button></div></div>
+<footer class="footnote">可丢弃原型 · 耗时来自已保存的真实运行，样本通过不代表全库保证。完整原生响应与正文保存在本机临时目录。文件路径表示内容已获取，不代表 Agent 已阅读正文或看见图片。</footer>
+</main>
+</div>
+</div>
+<script>
+const evidence=PAYLOAD;
+// 分类仅控制展示；保留证据中的原始场景、顺序、输入、输出与计时。
+const groups=[
+  {name:'知识库检索',description:'发现文章，核对渐进检索与缓存复用。',names:['知识库检索','检索下一页','检索定向复用缓存','检索过期定点刷新','按日期发现','跨主题复用历史缓存','七天到期再读取','检索直达旧记录'],checks:['首屏工作量','渐进分页','检索缓存直达','检索定点刷新','重复更新','历史缓存','跨工具复用','按需原生续页']},
+  {name:'摘要读取',description:'从已有记录到陌生文章，查看原摘要如何取得。',names:['摘要读取','摘要过期定点刷新','刷新后再读摘要','陌生旧文章摘要','旧文章再次读摘要'],checks:['摘要缓存直达','摘要定点刷新','陌生文章缺口']},
+  {name:'全文检索',description:'定位文内命中，核对章节链与容器补全。',names:['全文检索'],checks:['OR 与容器']},
+  {name:'篇章结构获取',description:'按真实父子层级理解文章结构。',names:['篇章结构获取'],checks:['章节层级']},
+  {name:'正文读取',description:'查看多章、章节范围和全文的读取结果。',names:['正文读取','完整章节范围','全文读取'],checks:['多章合并与图片','范围终点','全文与图片']}
+];
+let current=0;
+const remembered=new Map();
+/** 输入元素 ID，返回对应的固定页面节点。 */
+function element(id){return document.getElementById(id);}
+/** 在 parent 中添加 tag 文本节点；text 始终按纯文本显示，返回新元素。 */
+function appendText(parent,tag,text,className=''){const node=document.createElement(tag);node.textContent=text;node.className=className;parent.append(node);return node;}
+/** 返回 group 的场景索引列表；分类不改变原始证据内容。 */
+function indexes(group){return group.names.map(name=>evidence.scenarios.findIndex(item=>item.name===name)).filter(index=>index>=0);}
+/** 将 index 写入地址锚点并展示；无返回值，刷新页面仍保留选中场景。 */
+function choose(index){if(index!==current)location.hash='scenario='+index;show(index);}
+/** 给指标 id 填入数值和单位；无返回值。 */
+function metric(id,value,unit){const node=element(id);node.replaceChildren();appendText(node,'span',String(value));appendText(node,'small',unit);}
+/** 根据当前场景渲染两层导航及工具核对项；输入 group，无返回值。 */
+function renderNavigation(group){
+  element('tools').replaceChildren();
+  groups.forEach((entry,number)=>{const button=document.createElement('button');button.type='button';button.className='tool-button';button.setAttribute('aria-current',String(entry===group));appendText(button,'span',String(number+1).padStart(2,'0'),'tool-number');const label=appendText(button,'span','','tool-title');appendText(label,'span',entry.name);appendText(label,'span',indexes(entry).length+' 个场景','tool-count');button.onclick=()=>choose(remembered.get(entry.name)??indexes(entry)[0]);element('tools').append(button);});
+  const items=indexes(group);element('scenarios').replaceChildren();
+  items.forEach((index,position)=>{const button=document.createElement('button');button.type='button';button.className='scenario-button';button.textContent=String(position+1).padStart(2,'0')+'  '+evidence.scenarios[index].name;button.setAttribute('aria-current',String(index===current));button.onclick=()=>choose(index);element('scenarios').append(button);});
+  element('group-name').textContent=group.name;element('group-description').textContent=group.description;element('group-count').textContent=items.length+' 个场景';
+  const position=items.indexOf(current);element('status').textContent='场景 '+String(position+1).padStart(2,'0')+' / '+String(items.length).padStart(2,'0');element('step-label').textContent=group.name+' · '+(position+1)+' / '+items.length;
+  element('previous').disabled=position===0;element('next').disabled=position===items.length-1;element('previous').onclick=()=>choose(items[position-1]);element('next').onclick=()=>choose(items[position+1]);
+  element('checks').replaceChildren();group.checks.forEach(key=>{if(evidence.checks[key]){const row=appendText(element('checks'),'div','','check-row');appendText(row,'dt',key);appendText(row,'dd',evidence.checks[key]);}});
+}
+/** 展示 index 对应场景；输入有效索引，无返回值，保留真实数据与耗时。 */
+function show(index){
+  if(!Number.isInteger(index)||!evidence.scenarios[index])return;
+  current=index;const item=evidence.scenarios[index];const group=groups.find(entry=>entry.names.includes(item.name));remembered.set(group.name,index);renderNavigation(group);
+  element('name').textContent=item.name;element('explain').textContent=item.explain;element('input').textContent=JSON.stringify(item.input,null,2);element('output').textContent=JSON.stringify(item.output,null,2);element('output-label').textContent=item.exact_output?'实际返回给 Agent 的 JSON':'精简结构化展示（完整结果保存在本地文件）';element('diagnostics').textContent=JSON.stringify(item.diagnostics||{},null,2);
+  metric('total-time',item.total_seconds.toFixed(3),'秒');metric('request-count',item.native.length,'次');const result=item.output;const count=result.results?.length??result.hit_count??result.units?.length??result.actual_ranges?.length??0;metric('result-count',count,result.actual_ranges?'段':result.units?'个章节':'条');element('result-metric-label').textContent=result.hits?'命中单位':result.actual_ranges?'合并后范围':'本次结果';renderResult(result);renderCommands(item);
+}
+/** 渲染 item 的命令时间线；参数折叠，作用与累计耗时保持可见，无返回值。 */
+function renderCommands(item){
+  const panel=element('native');panel.replaceChildren();if(!item.native.length)appendText(panel,'p','本步直接使用已有结果或有效缓存，无需调用 CLI。','empty');
+  item.native.forEach((call,index)=>{const card=appendText(panel,'div','','command-step');appendText(card,'span',index+1,'command-number');const body=appendText(card,'div','');const title=appendText(body,'div','','command-title');appendText(title,'strong','命令 '+(index+1)+' · '+call.command.slice(0,2).join(' '));appendText(title,'span','从输入开始累计 '+call.elapsed_seconds.toFixed(3)+' 秒','command-time');appendText(body,'p',call.purpose);appendText(body,'p','本条命令 '+call.seconds.toFixed(3)+' 秒','muted small');const details=appendText(body,'details','');appendText(details,'summary','查看完整调用参数');appendText(details,'pre',JSON.stringify({command:call.command,revision:call.revision,content_chars:call.content_chars},null,2));});
+}
+/** 渲染 result 的业务结果卡片、状态或章节；仅使用安全文本和 HTTP(S) 来源链接，无返回值。 */
+function renderResult(result){
+  const panel=element('readable');panel.replaceChildren();
+  if(result.results){
+    result.results.forEach(row=>{const card=appendText(panel,'article','','result-card');if(row.date)appendText(card,'div',row.date,'result-date');const title=appendText(card,'h3',row.title||row.input||row.article_id);if(row.url&&/^https?:\/\//.test(row.url)){title.textContent='';const link=appendText(title,'a',row.title||row.article_id);link.href=row.url;link.target='_blank';link.rel='noopener noreferrer';}if(row.snippet)appendText(card,'p',row.snippet,'snippet');if(row.snippet_status)appendText(card,'p','此候选为评论命中，未交付评论片段。','muted');if(row.summary)appendText(card,'p',row.summary);if(row.status&&row.status!=='found')appendText(card,'p','摘要状态：'+row.status,'muted');});
+    if(!result.results.length)appendText(panel,'p','本次没有可交付结果。','empty');
+    if(result.next_cursor)appendText(panel,'p','可继续检索：下一次可能交付已有结果，也可能推进匹配。','result-state');else if(result.status==='finished')appendText(panel,'p','本次范围内的处理已结束。','result-state');if(result.notice)appendText(panel,'p',result.notice,'result-state');
+  }
+  if(result.units)result.units.forEach(unit=>{const row=appendText(panel,'div',unit.title,'structure-row');row.style.paddingLeft=((unit.depth-1)*16)+'px';appendText(row,'span',' · 第 '+unit.depth+' 层','muted small');});
+  if(result.hits){appendText(panel,'p','命中 '+result.hit_count+' 个顶层单位，补全 '+result.expanded_containers+' 个容器。','result-state');result.hits.forEach(hit=>appendText(panel,'div',hit.section_chain.map(section=>section.title).join(' → ')+(hit.container_expanded?' · 容器已补全':''),'structure-row'));}
+  if(result.markdown_path){appendText(panel,'h3',result.scope==='full'?'全文已取得':'所选章节已取得');appendText(panel,'p','合并后 '+result.actual_ranges.length+' 段 · 文内图片 '+Object.keys(result.images).length+' 张','result-state');appendText(panel,'p',result.warnings.length?'素材存在未完成项，详见结构化结果。':'本次素材均已获取。','muted small');appendText(panel,'p','Markdown 保存位置','section-label');appendText(panel,'p',result.markdown_path,'path');}
+}
+/** 从地址锚点读取场景；无效或缺失时显示第一项，无返回值。 */
+function restoreSelection(){const match=location.hash.match(/^#scenario=(\d+)$/);const index=match?Number(match[1]):0;show(evidence.scenarios[index]?index:0);}
+window.addEventListener('hashchange',restoreSelection);
+element('recorded-at').textContent='采集于 '+evidence.checks['验证时间'].replace('T',' ').replace('+08:00','（UTC+8）');
+restoreSelection();
+</script>
+</body>
+</html>
