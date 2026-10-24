@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-24T18:07:07+08:00",
+  "recorded_at": "2026-10-24T19:57:21+08:00",
   "unit": "seconds",
   "definition": "每个场景从本次工具接收输入起独立计时；elapsed_seconds 截止该命令返回，total_seconds 截止工具完成本地整理。",
   "scenarios": [
@@ -8,7 +8,7 @@
       "input": {
         "query": "RAG"
       },
-      "total_seconds": 3.634,
+      "total_seconds": 3.781,
       "commands": [
         {
           "command": [
@@ -29,8 +29,8 @@
           ],
           "purpose": "在 WaytoAGI 知识库执行原查询，按创建日期倒序取得第一批候选。",
           "revision": null,
-          "seconds": 1.18,
-          "elapsed_seconds": 1.181,
+          "seconds": 1.445,
+          "elapsed_seconds": 1.448,
           "content_chars": 0
         },
         {
@@ -56,8 +56,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 3289,
-          "seconds": 1.47,
-          "elapsed_seconds": 2.652,
+          "seconds": 1.443,
+          "elapsed_seconds": 2.892,
           "content_chars": 28630
         },
         {
@@ -83,8 +83,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 126396,
-          "seconds": 0.973,
-          "elapsed_seconds": 3.629,
+          "seconds": 0.88,
+          "elapsed_seconds": 3.776,
           "content_chars": 22188
         }
       ]
@@ -98,12 +98,107 @@
       "commands": []
     },
     {
+      "name": "检索定向复用缓存",
+      "input": {
+        "query": "RAG",
+        "演示前置": "已执行过一次检索"
+      },
+      "total_seconds": 0.726,
+      "commands": [
+        {
+          "command": [
+            "drive",
+            "+search",
+            "--query",
+            "RAG",
+            "--space-ids",
+            "7226178700923011075",
+            "--sort",
+            "create_time",
+            "--page-size",
+            "20",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "在 WaytoAGI 知识库执行原查询，按创建日期倒序取得第一批候选。",
+          "revision": null,
+          "seconds": 0.723,
+          "elapsed_seconds": 0.723,
+          "content_chars": 0
+        }
+      ]
+    },
+    {
+      "name": "检索过期定点刷新",
+      "input": {
+        "query": "RAG",
+        "演示前置": "独立复制当月缓存并将年龄设为七天以前"
+      },
+      "total_seconds": 1.325,
+      "commands": [
+        {
+          "command": [
+            "drive",
+            "+search",
+            "--query",
+            "RAG",
+            "--space-ids",
+            "7226178700923011075",
+            "--sort",
+            "create_time",
+            "--page-size",
+            "20",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "在 WaytoAGI 知识库执行原查询，按创建日期倒序取得第一批候选。",
+          "revision": null,
+          "seconds": 0.693,
+          "elapsed_seconds": 0.693,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/QPe5w5g7UisbEkkow8XcDmOpn8e",
+            "--scope",
+            "range",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "-1",
+            "--start-block-id",
+            "HvgRdwA1Vo4oDOxT7Ysc6ASMnCd",
+            "--end-block-id",
+            "HvgRdwA1Vo4oDOxT7Ysc6ASMnCd",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "按已保存的日志条目位置刷新这一条原摘要，核对块 ID 与文章身份；不延长整月缓存有效期。",
+          "revision": 126396,
+          "seconds": 0.627,
+          "elapsed_seconds": 1.323,
+          "content_chars": 1352
+        }
+      ]
+    },
+    {
       "name": "按日期发现",
       "input": {
         "since": "2026-09-01",
         "until": "2026-09-30"
       },
-      "total_seconds": 1.562,
+      "total_seconds": 1.685,
       "commands": [
         {
           "command": [
@@ -128,8 +223,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 3289,
-          "seconds": 1.552,
-          "elapsed_seconds": 1.553,
+          "seconds": 1.671,
+          "elapsed_seconds": 1.673,
           "content_chars": 88296
         }
       ]
@@ -141,7 +236,7 @@
         "since": "2026-09-01",
         "until": "2026-09-30"
       },
-      "total_seconds": 0.957,
+      "total_seconds": 1.151,
       "commands": [
         {
           "command": [
@@ -162,8 +257,8 @@
           ],
           "purpose": "在 WaytoAGI 知识库执行原查询，按创建日期倒序取得第一批候选。",
           "revision": null,
-          "seconds": 0.953,
-          "elapsed_seconds": 0.954,
+          "seconds": 1.145,
+          "elapsed_seconds": 1.145,
           "content_chars": 0
         }
       ]
@@ -175,7 +270,7 @@
         "until": "2026-09-30",
         "演示前置": "仅将缓存时间改为已过期"
       },
-      "total_seconds": 1.469,
+      "total_seconds": 1.476,
       "commands": [
         {
           "command": [
@@ -200,8 +295,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 3289,
-          "seconds": 1.46,
-          "elapsed_seconds": 1.461,
+          "seconds": 1.467,
+          "elapsed_seconds": 1.468,
           "content_chars": 88296
         }
       ]
@@ -214,7 +309,7 @@
           "YTt3wPPIeixEK5kbJPnc0YL7nTf"
         ]
       },
-      "total_seconds": 0.007,
+      "total_seconds": 0.002,
       "commands": []
     },
     {
@@ -225,7 +320,7 @@
         ],
         "演示前置": "9 月缓存年龄设为七天以前"
       },
-      "total_seconds": 1.225,
+      "total_seconds": 1.33,
       "commands": [
         {
           "command": [
@@ -252,8 +347,8 @@
           ],
           "purpose": "按已保存的日志条目位置刷新这一条原摘要，核对块 ID 与文章身份；不延长整月缓存有效期。",
           "revision": 3289,
-          "seconds": 1.221,
-          "elapsed_seconds": 1.223,
+          "seconds": 1.326,
+          "elapsed_seconds": 1.328,
           "content_chars": 424
         }
       ]
@@ -276,7 +371,7 @@
         ],
         "演示前置": "独立空缓存，不提供已知日期或日志块"
       },
-      "total_seconds": 29.126,
+      "total_seconds": 26.725,
       "commands": [
         {
           "command": [
@@ -301,8 +396,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 3289,
-          "seconds": 1.385,
-          "elapsed_seconds": 1.385,
+          "seconds": 1.422,
+          "elapsed_seconds": 1.423,
           "content_chars": 28630
         },
         {
@@ -328,8 +423,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 126396,
-          "seconds": 0.875,
-          "elapsed_seconds": 2.262,
+          "seconds": 0.924,
+          "elapsed_seconds": 2.35,
           "content_chars": 22188
         },
         {
@@ -355,8 +450,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 3289,
-          "seconds": 1.58,
-          "elapsed_seconds": 3.845,
+          "seconds": 1.451,
+          "elapsed_seconds": 3.803,
           "content_chars": 88296
         },
         {
@@ -382,8 +477,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 3289,
-          "seconds": 1.467,
-          "elapsed_seconds": 5.32,
+          "seconds": 2.006,
+          "elapsed_seconds": 5.815,
           "content_chars": 86829
         },
         {
@@ -409,8 +504,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 3289,
-          "seconds": 1.775,
-          "elapsed_seconds": 7.103,
+          "seconds": 1.66,
+          "elapsed_seconds": 7.481,
           "content_chars": 93647
         },
         {
@@ -436,8 +531,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 3289,
-          "seconds": 1.802,
-          "elapsed_seconds": 8.912,
+          "seconds": 1.776,
+          "elapsed_seconds": 9.263,
           "content_chars": 92923
         },
         {
@@ -463,8 +558,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 3289,
-          "seconds": 1.812,
-          "elapsed_seconds": 10.759,
+          "seconds": 1.779,
+          "elapsed_seconds": 11.051,
           "content_chars": 80317
         },
         {
@@ -490,8 +585,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 3289,
-          "seconds": 1.762,
-          "elapsed_seconds": 12.526,
+          "seconds": 1.656,
+          "elapsed_seconds": 12.715,
           "content_chars": 98122
         },
         {
@@ -517,8 +612,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 3289,
-          "seconds": 1.592,
-          "elapsed_seconds": 14.125,
+          "seconds": 1.495,
+          "elapsed_seconds": 14.216,
           "content_chars": 108384
         },
         {
@@ -544,8 +639,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 3289,
-          "seconds": 1.625,
-          "elapsed_seconds": 15.758,
+          "seconds": 1.446,
+          "elapsed_seconds": 15.671,
           "content_chars": 101179
         },
         {
@@ -571,8 +666,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 3289,
-          "seconds": 1.693,
-          "elapsed_seconds": 17.46,
+          "seconds": 1.491,
+          "elapsed_seconds": 17.169,
           "content_chars": 102011
         },
         {
@@ -598,8 +693,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 70,
-          "seconds": 1.822,
-          "elapsed_seconds": 19.291,
+          "seconds": 1.514,
+          "elapsed_seconds": 18.692,
           "content_chars": 107018
         },
         {
@@ -625,8 +720,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 70,
-          "seconds": 1.621,
-          "elapsed_seconds": 20.921,
+          "seconds": 1.253,
+          "elapsed_seconds": 19.953,
           "content_chars": 77140
         },
         {
@@ -652,8 +747,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 70,
-          "seconds": 1.5,
-          "elapsed_seconds": 22.428,
+          "seconds": 1.391,
+          "elapsed_seconds": 21.35,
           "content_chars": 69105
         },
         {
@@ -679,8 +774,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 70,
-          "seconds": 1.483,
-          "elapsed_seconds": 23.919,
+          "seconds": 1.434,
+          "elapsed_seconds": 22.791,
           "content_chars": 71547
         },
         {
@@ -706,8 +801,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 70,
-          "seconds": 1.326,
-          "elapsed_seconds": 25.251,
+          "seconds": 1.442,
+          "elapsed_seconds": 24.239,
           "content_chars": 54049
         },
         {
@@ -733,8 +828,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 70,
-          "seconds": 1.398,
-          "elapsed_seconds": 26.652,
+          "seconds": 1.188,
+          "elapsed_seconds": 25.434,
           "content_chars": 42289
         },
         {
@@ -760,8 +855,8 @@
           ],
           "purpose": "直接按已知章节 ID 读取所需日志板块，解析月份记录、文章引用和原始摘要。",
           "revision": 70,
-          "seconds": 2.464,
-          "elapsed_seconds": 29.12,
+          "seconds": 1.282,
+          "elapsed_seconds": 26.72,
           "content_chars": 37945
         }
       ]
@@ -773,8 +868,41 @@
           "W1Lkw5pjyijyRHk99rMcy3VHnXf"
         ]
       },
-      "total_seconds": 0.016,
+      "total_seconds": 0.017,
       "commands": []
+    },
+    {
+      "name": "检索直达旧记录",
+      "input": {
+        "query": "鸡同鸭讲",
+        "演示前置": "共享刚才旧文章摘要查找的缓存"
+      },
+      "total_seconds": 0.981,
+      "commands": [
+        {
+          "command": [
+            "drive",
+            "+search",
+            "--query",
+            "鸡同鸭讲",
+            "--space-ids",
+            "7226178700923011075",
+            "--sort",
+            "create_time",
+            "--page-size",
+            "20",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "在 WaytoAGI 知识库执行原查询，按创建日期倒序取得第一批候选。",
+          "revision": null,
+          "seconds": 0.963,
+          "elapsed_seconds": 0.964,
+          "content_chars": 0
+        }
+      ]
     },
     {
       "name": "篇章结构获取",
@@ -782,7 +910,7 @@
         "article": "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
         "depth": 2
       },
-      "total_seconds": 0.674,
+      "total_seconds": 0.61,
       "commands": [
         {
           "command": [
@@ -805,8 +933,8 @@
           ],
           "purpose": "读取完整 XML 与块标识，建立真实章节层级、块归属及完整章节边界。",
           "revision": 71,
-          "seconds": 0.671,
-          "elapsed_seconds": 0.671,
+          "seconds": 0.607,
+          "elapsed_seconds": 0.607,
           "content_chars": 15248
         }
       ]
@@ -820,7 +948,7 @@
           "MinerU"
         ]
       },
-      "total_seconds": 1.575,
+      "total_seconds": 1.545,
       "commands": [
         {
           "command": [
@@ -843,8 +971,8 @@
           ],
           "purpose": "读取完整 XML 与块标识，建立真实章节层级、块归属及完整章节边界。",
           "revision": 71,
-          "seconds": 0.577,
-          "elapsed_seconds": 0.578,
+          "seconds": 0.528,
+          "elapsed_seconds": 0.528,
           "content_chars": 15248
         },
         {
@@ -874,8 +1002,8 @@
           ],
           "purpose": "按 OR 关键词查找文内命中块或容器节选，随后补齐所属章节链。",
           "revision": 71,
-          "seconds": 0.51,
-          "elapsed_seconds": 1.091,
+          "seconds": 0.509,
+          "elapsed_seconds": 1.041,
           "content_chars": 3119
         },
         {
@@ -903,8 +1031,8 @@
           ],
           "purpose": "按命中的顶层容器标识补读完整容器，避免只交付表格或容器节选。",
           "revision": 71,
-          "seconds": 0.481,
-          "elapsed_seconds": 1.574,
+          "seconds": 0.499,
+          "elapsed_seconds": 1.543,
           "content_chars": 812
         }
       ]
@@ -918,7 +1046,7 @@
           "doxcnUVnD2RsbnIBVlqbUP7Nleg"
         ]
       },
-      "total_seconds": 5.511,
+      "total_seconds": 5.729,
       "commands": [
         {
           "command": [
@@ -941,8 +1069,8 @@
           ],
           "purpose": "读取完整 XML 与块标识，建立真实章节层级、块归属及完整章节边界。",
           "revision": 71,
-          "seconds": 0.58,
-          "elapsed_seconds": 0.581,
+          "seconds": 0.574,
+          "elapsed_seconds": 0.575,
           "content_chars": 15248
         },
         {
@@ -970,8 +1098,8 @@
           ],
           "purpose": "读取计算后的完整章节区间，取得 Markdown 正文。",
           "revision": 71,
-          "seconds": 0.501,
-          "elapsed_seconds": 1.085,
+          "seconds": 0.57,
+          "elapsed_seconds": 1.147,
           "content_chars": 2769
         },
         {
@@ -981,7 +1109,7 @@
             "--token",
             "FgFnb4LZYoyeiwxWPy6cRrrenRf",
             "--output",
-            "/private/tmp/zen43-body-ux63__we/FgFnb4LZYoyeiwxWPy6cRrrenRf",
+            "/private/tmp/zen43-body-64kugs9t/FgFnb4LZYoyeiwxWPy6cRrrenRf",
             "--as",
             "user",
             "--format",
@@ -989,8 +1117,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 1.124,
-          "elapsed_seconds": 2.21,
+          "seconds": 1.344,
+          "elapsed_seconds": 2.493,
           "content_chars": 0
         },
         {
@@ -1000,7 +1128,7 @@
             "--token",
             "CEMjbJM4goj50exy0RVcQD3In6f",
             "--output",
-            "/private/tmp/zen43-body-ux63__we/CEMjbJM4goj50exy0RVcQD3In6f",
+            "/private/tmp/zen43-body-64kugs9t/CEMjbJM4goj50exy0RVcQD3In6f",
             "--as",
             "user",
             "--format",
@@ -1008,8 +1136,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 1.057,
-          "elapsed_seconds": 3.267,
+          "seconds": 1.072,
+          "elapsed_seconds": 3.566,
           "content_chars": 0
         },
         {
@@ -1019,7 +1147,7 @@
             "--token",
             "QztFbvbvPoDWJOxt9tXc469inid",
             "--output",
-            "/private/tmp/zen43-body-ux63__we/QztFbvbvPoDWJOxt9tXc469inid",
+            "/private/tmp/zen43-body-64kugs9t/QztFbvbvPoDWJOxt9tXc469inid",
             "--as",
             "user",
             "--format",
@@ -1027,8 +1155,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 1.07,
-          "elapsed_seconds": 4.339,
+          "seconds": 1.106,
+          "elapsed_seconds": 4.674,
           "content_chars": 0
         },
         {
@@ -1038,7 +1166,7 @@
             "--token",
             "JQjObK47ZoZiXpxzFgZcSjDHndh",
             "--output",
-            "/private/tmp/zen43-body-ux63__we/JQjObK47ZoZiXpxzFgZcSjDHndh",
+            "/private/tmp/zen43-body-64kugs9t/JQjObK47ZoZiXpxzFgZcSjDHndh",
             "--as",
             "user",
             "--format",
@@ -1046,8 +1174,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 1.17,
-          "elapsed_seconds": 5.51,
+          "seconds": 1.053,
+          "elapsed_seconds": 5.728,
           "content_chars": 0
         }
       ]
@@ -1059,7 +1187,7 @@
         "start": "doxcnUVnD2RsbnIBVlqbUP7Nleg",
         "end": "doxcnT1zVZKgY66BtLrEm5yzHsg"
       },
-      "total_seconds": 2.088,
+      "total_seconds": 2.408,
       "commands": [
         {
           "command": [
@@ -1082,8 +1210,8 @@
           ],
           "purpose": "读取完整 XML 与块标识，建立真实章节层级、块归属及完整章节边界。",
           "revision": 71,
-          "seconds": 0.579,
-          "elapsed_seconds": 0.579,
+          "seconds": 0.618,
+          "elapsed_seconds": 0.619,
           "content_chars": 15248
         },
         {
@@ -1111,8 +1239,8 @@
           ],
           "purpose": "读取计算后的完整章节区间，取得 Markdown 正文。",
           "revision": 71,
-          "seconds": 0.493,
-          "elapsed_seconds": 1.074,
+          "seconds": 0.602,
+          "elapsed_seconds": 1.224,
           "content_chars": 955
         },
         {
@@ -1122,7 +1250,7 @@
             "--token",
             "CEMjbJM4goj50exy0RVcQD3In6f",
             "--output",
-            "/private/tmp/zen43-body-y2272460/CEMjbJM4goj50exy0RVcQD3In6f",
+            "/private/tmp/zen43-body-zitm6_y8/CEMjbJM4goj50exy0RVcQD3In6f",
             "--as",
             "user",
             "--format",
@@ -1130,8 +1258,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 1.012,
-          "elapsed_seconds": 2.087,
+          "seconds": 1.181,
+          "elapsed_seconds": 2.407,
           "content_chars": 0
         }
       ]
@@ -1141,7 +1269,7 @@
       "input": {
         "article": "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd"
       },
-      "total_seconds": 12.402,
+      "total_seconds": 12.952,
       "commands": [
         {
           "command": [
@@ -1164,8 +1292,8 @@
           ],
           "purpose": "读取完整 XML 与块标识，建立真实章节层级、块归属及完整章节边界。",
           "revision": 71,
-          "seconds": 0.551,
-          "elapsed_seconds": 0.552,
+          "seconds": 0.593,
+          "elapsed_seconds": 0.593,
           "content_chars": 15248
         },
         {
@@ -1189,8 +1317,8 @@
           ],
           "purpose": "读取全文 Markdown，保留文章标题与正文结构，随后处理文内图片。",
           "revision": 71,
-          "seconds": 0.714,
-          "elapsed_seconds": 1.269,
+          "seconds": 0.645,
+          "elapsed_seconds": 1.241,
           "content_chars": 7235
         },
         {
@@ -1200,7 +1328,7 @@
             "--token",
             "FlSlb18o0oz5EYxjz2wcFRtDnTf",
             "--output",
-            "/private/tmp/zen43-body-34v0jwur/FlSlb18o0oz5EYxjz2wcFRtDnTf",
+            "/private/tmp/zen43-body-x52eqt21/FlSlb18o0oz5EYxjz2wcFRtDnTf",
             "--as",
             "user",
             "--format",
@@ -1208,8 +1336,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 1.084,
-          "elapsed_seconds": 2.354,
+          "seconds": 1.161,
+          "elapsed_seconds": 2.403,
           "content_chars": 0
         },
         {
@@ -1219,7 +1347,7 @@
             "--token",
             "XYOabwQx3oBQg1x3e5rcDMf1nEf",
             "--output",
-            "/private/tmp/zen43-body-34v0jwur/XYOabwQx3oBQg1x3e5rcDMf1nEf",
+            "/private/tmp/zen43-body-x52eqt21/XYOabwQx3oBQg1x3e5rcDMf1nEf",
             "--as",
             "user",
             "--format",
@@ -1227,8 +1355,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 1.062,
-          "elapsed_seconds": 3.418,
+          "seconds": 1.181,
+          "elapsed_seconds": 3.584,
           "content_chars": 0
         },
         {
@@ -1238,7 +1366,7 @@
             "--token",
             "IoDibWTO3oWsOYxDBIwcJfzmnlh",
             "--output",
-            "/private/tmp/zen43-body-34v0jwur/IoDibWTO3oWsOYxDBIwcJfzmnlh",
+            "/private/tmp/zen43-body-x52eqt21/IoDibWTO3oWsOYxDBIwcJfzmnlh",
             "--as",
             "user",
             "--format",
@@ -1246,8 +1374,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 1.062,
-          "elapsed_seconds": 4.481,
+          "seconds": 1.12,
+          "elapsed_seconds": 4.706,
           "content_chars": 0
         },
         {
@@ -1257,7 +1385,7 @@
             "--token",
             "PzIRbqUN2olTD3xnSNxcRtYYnSY",
             "--output",
-            "/private/tmp/zen43-body-34v0jwur/PzIRbqUN2olTD3xnSNxcRtYYnSY",
+            "/private/tmp/zen43-body-x52eqt21/PzIRbqUN2olTD3xnSNxcRtYYnSY",
             "--as",
             "user",
             "--format",
@@ -1265,8 +1393,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 1.033,
-          "elapsed_seconds": 5.516,
+          "seconds": 1.071,
+          "elapsed_seconds": 5.778,
           "content_chars": 0
         },
         {
@@ -1276,7 +1404,7 @@
             "--token",
             "FgFnb4LZYoyeiwxWPy6cRrrenRf",
             "--output",
-            "/private/tmp/zen43-body-34v0jwur/FgFnb4LZYoyeiwxWPy6cRrrenRf",
+            "/private/tmp/zen43-body-x52eqt21/FgFnb4LZYoyeiwxWPy6cRrrenRf",
             "--as",
             "user",
             "--format",
@@ -1284,8 +1412,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 0.899,
-          "elapsed_seconds": 6.415,
+          "seconds": 0.952,
+          "elapsed_seconds": 6.73,
           "content_chars": 0
         },
         {
@@ -1295,7 +1423,7 @@
             "--token",
             "CEMjbJM4goj50exy0RVcQD3In6f",
             "--output",
-            "/private/tmp/zen43-body-34v0jwur/CEMjbJM4goj50exy0RVcQD3In6f",
+            "/private/tmp/zen43-body-x52eqt21/CEMjbJM4goj50exy0RVcQD3In6f",
             "--as",
             "user",
             "--format",
@@ -1303,8 +1431,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 0.999,
-          "elapsed_seconds": 7.416,
+          "seconds": 1.012,
+          "elapsed_seconds": 7.743,
           "content_chars": 0
         },
         {
@@ -1314,7 +1442,7 @@
             "--token",
             "QztFbvbvPoDWJOxt9tXc469inid",
             "--output",
-            "/private/tmp/zen43-body-34v0jwur/QztFbvbvPoDWJOxt9tXc469inid",
+            "/private/tmp/zen43-body-x52eqt21/QztFbvbvPoDWJOxt9tXc469inid",
             "--as",
             "user",
             "--format",
@@ -1322,8 +1450,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 0.98,
-          "elapsed_seconds": 8.398,
+          "seconds": 0.907,
+          "elapsed_seconds": 8.652,
           "content_chars": 0
         },
         {
@@ -1333,7 +1461,7 @@
             "--token",
             "JQjObK47ZoZiXpxzFgZcSjDHndh",
             "--output",
-            "/private/tmp/zen43-body-34v0jwur/JQjObK47ZoZiXpxzFgZcSjDHndh",
+            "/private/tmp/zen43-body-x52eqt21/JQjObK47ZoZiXpxzFgZcSjDHndh",
             "--as",
             "user",
             "--format",
@@ -1341,8 +1469,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 0.886,
-          "elapsed_seconds": 9.285,
+          "seconds": 0.905,
+          "elapsed_seconds": 9.558,
           "content_chars": 0
         },
         {
@@ -1352,7 +1480,7 @@
             "--token",
             "GiBCbsgoQopfzFxlNbwcGS0un3e",
             "--output",
-            "/private/tmp/zen43-body-34v0jwur/GiBCbsgoQopfzFxlNbwcGS0un3e",
+            "/private/tmp/zen43-body-x52eqt21/GiBCbsgoQopfzFxlNbwcGS0un3e",
             "--as",
             "user",
             "--format",
@@ -1360,8 +1488,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 1.067,
-          "elapsed_seconds": 10.356,
+          "seconds": 1.151,
+          "elapsed_seconds": 10.71,
           "content_chars": 0
         },
         {
@@ -1371,7 +1499,7 @@
             "--token",
             "BquubaupLoEIA4x62Jcce1ZDnVh",
             "--output",
-            "/private/tmp/zen43-body-34v0jwur/BquubaupLoEIA4x62Jcce1ZDnVh",
+            "/private/tmp/zen43-body-x52eqt21/BquubaupLoEIA4x62Jcce1ZDnVh",
             "--as",
             "user",
             "--format",
@@ -1379,8 +1507,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 0.956,
-          "elapsed_seconds": 11.313,
+          "seconds": 0.987,
+          "elapsed_seconds": 11.699,
           "content_chars": 0
         },
         {
@@ -1390,7 +1518,7 @@
             "--token",
             "TIAtbY5mgoD6zVxo6ZgcMqE0nYe",
             "--output",
-            "/private/tmp/zen43-body-34v0jwur/TIAtbY5mgoD6zVxo6ZgcMqE0nYe",
+            "/private/tmp/zen43-body-x52eqt21/TIAtbY5mgoD6zVxo6ZgcMqE0nYe",
             "--as",
             "user",
             "--format",
@@ -1398,8 +1526,8 @@
           ],
           "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
           "revision": null,
-          "seconds": 1.086,
-          "elapsed_seconds": 12.401,
+          "seconds": 1.251,
+          "elapsed_seconds": 12.951,
           "content_chars": 0
         }
       ]

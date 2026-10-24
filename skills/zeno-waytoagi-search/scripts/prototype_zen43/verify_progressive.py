@@ -1,4 +1,4 @@
-"""不联网的原型行为核对：分页状态不漏候选、历史七天缓存、当月强制读取及共享摘要。
+"""不联网的原型行为核对：分页状态不漏候选、历史七天缓存、候选定向复用及共享摘要。
 
 只替代外部 CLI 响应与当前日期；真实解析、月份缓存和续查状态仍由原型执行。
 """
@@ -102,17 +102,82 @@ class ProgressiveChecks(unittest.TestCase):
         self.assertEqual(len([a for a in self.requests if a[:2] == ["docs", "+fetch"]]), docs_before+1)
         self.assertTrue(all("outline" not in a and "full" not in a for a in self.requests))
 
-    def test_current_always_requested_and_summaries_share_history(self):
-        """新检索的当前月正常请求，但随后摘要复用已取得记录，不再读取当前月份。"""
-        self.context().search(since="2026-09-01", until="2026-09-30")
-        for _ in range(2):
-            search = self.context()
-            search.search(query="RAG")
-            self.assertEqual(len(search.calls), 3)
+    def test_empty_native_page_does_not_fetch_second_batch_immediately(self):
+        """首批候选为空但原生可继续时，本次只取一批，不为填满结果连续请求。"""
+        response = {"data": {"results": [], "has_more": True, "page_token": "next"}}
+        with patch.object(daily, "run_cli", return_value=response):
             p = self.context()
-            result = p.summaries(["a", "september"])
-            self.assertEqual([r["summary"] for r in result["results"]], ["原摘要 a", "原摘要 september"])
-            self.assertEqual(p.calls, [])
+            result = p.search(query="RAG")
+        self.assertEqual(len(p.calls), 1)
+        self.assertEqual(result["results"], [])
+        self.assertIsNotNone(result["next_cursor"])
+
+    def test_warm_search_only_requests_native_candidates(self):
+        """已有当月记录时只重新检索候选；摘要共享缓存，纯日期发现仍重读活跃月份。"""
+        self.context().search(query="RAG")
+        warm = self.context()
+        result = warm.search(query="Agent")
+        self.assertEqual(len(result["results"]), 3)
+        self.assertEqual(len(warm.calls), 1)
+        self.assertEqual(warm.calls[0]["arguments"][:2], ["drive", "+search"])
+        self.assertEqual(warm.diagnostics["months_read"], [])
+        summary = self.context()
+        summary.summaries(["a"])
+        self.assertEqual(summary.calls, [])
+        discovery = self.context()
+        discovery.search(since="2026-10-01")
+        self.assertEqual(len(discovery.calls), 2)
+
+    def test_search_uses_old_cached_candidate_before_current_month(self):
+        """已有历史候选即使不足三条也直接交付，不为凑首屏请求当月。"""
+        MonthlyLogs(self.context()).read("2026-09")
+        p = self.context()
+        result = p.search(query="RAG")
+        self.assertEqual([r["article_id"] for r in result["results"]], ["september"])
+        self.assertEqual(len(p.calls), 1)
+        self.assertEqual(p.diagnostics["months_read"], [])
+        self.assertIsNotNone(result["next_cursor"])
+
+    def test_search_refresh_is_bounded_and_does_not_renew_month(self):
+        """多个候选过期时每次只刷新一条，月份耗尽仍可继续；不延长整月期限。"""
+        with patch("time.time", return_value=1000000):
+            logs = MonthlyLogs(self.context())
+            logs.read("2026-10")
+        before = logs.cache_path("2026-10").read_text()
+        with patch("time.time", return_value=1000000 + HISTORY_TTL_SECONDS):
+            p = self.context()
+            result = p.search(query="RAG")
+            self.assertEqual([r["article_id"] for r in result["results"]], ["a"])
+            self.assertEqual(len(p.calls), 2)
+            self.assertIn("entrya", p.calls[1]["arguments"])
+            session, generation = result["next_cursor"].split(":")
+            path = p.cache / f"{session}-search-{generation}.json"
+            state = json.loads(path.read_text())
+            state.update(month_offset=len(state["months"]), native_done=True)
+            path.write_text(json.dumps(state))
+            continued = self.context()
+            next_result = continued.search(cursor=result["next_cursor"])
+            self.assertEqual([r["article_id"] for r in next_result["results"]], ["b"])
+            self.assertEqual(len(continued.calls), 1)
+            self.assertIn("entryb", continued.calls[0]["arguments"])
+            self.assertIsNotNone(next_result["next_cursor"])
+        self.assertEqual(logs.cache_path("2026-10").read_text(), before)
+
+    def test_cache_selection_filters_dates_before_deduplication(self):
+        """同文章在九月、十月都有记录，九月检索须选九月记录，不被十月覆盖。"""
+        logs = MonthlyLogs(self.context())
+        october = logs.read("2026-10")[0]
+        logs.read("2026-09")
+        path = logs.cache_path("2026-09")
+        content = json.loads(path.read_text())
+        content["records"].append({**october, "date": "2026-09-20"})
+        path.write_text(json.dumps(content))
+        p = self.context()
+        result = p.search(query="RAG", since="2026-09-01", until="2026-09-30")
+        self.assertIn("a", [r["article_id"] for r in result["results"]])
+        self.assertTrue(all(r["date"].startswith("2026-09") for r in result["results"]))
+        self.assertEqual(len(p.calls), 1)
+        self.assertEqual(p.diagnostics["months_read"], [])
 
     def test_old_cached_article_does_not_scan_newer_months(self):
         """旧文章已经在有效缓存中，即使从未检索它也应零请求返回；重复输入保留对应关系。"""

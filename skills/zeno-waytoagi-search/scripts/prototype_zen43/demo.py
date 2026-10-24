@@ -60,7 +60,7 @@ def command_purpose(arguments, method):
     if scope == "keyword":
         return "按 OR 关键词查找文内命中块或容器节选，随后补齐所属章节链。"
     if scope == "range":
-        if method == "summaries":
+        if method in {"search", "summaries"}:
             return "按已保存的日志条目位置刷新这一条原摘要，核对块 ID 与文章身份；不延长整月缓存有效期。"
         return "读取计算后的完整章节区间，取得 Markdown 正文。" if options.get("--doc-format") == "markdown" else "按命中的顶层容器标识补读完整容器，避免只交付表格或容器节选。"
     if options.get("--doc-format") == "markdown":
@@ -86,7 +86,7 @@ body{font:16px/1.65 system-ui,sans-serif;color:#22313b;background:#f5f7f8;max-wi
 /** 展示索引 index 对应的真实场景；输入数字索引，无返回值，刷新全部状态。 */
 function show(index){current=index;const item=evidence.scenarios[index];document.getElementById('name').textContent=item.name;document.getElementById('explain').textContent=item.explain;document.getElementById('input').textContent=JSON.stringify(item.input,null,2);renderCommands(item);document.getElementById('output').textContent=JSON.stringify(item.output,null,2);document.getElementById('output-label').textContent=item.exact_output?'实际返回给 Agent 的 JSON':'该工具的精简展示（完整结果保存在本地文件）';document.getElementById('diagnostics').textContent=JSON.stringify(item.diagnostics||{},null,2);renderResult(item.output);document.getElementById('status').textContent='步骤 '+(index+1)+' / '+evidence.scenarios.length;document.querySelectorAll('#tabs button').forEach((b,i)=>b.classList.toggle('active',i===index));}
 /** 展示 item 场景的命令作用、参数和真实累计耗时；输入场景记录，无返回值。 */
-function renderCommands(item){const panel=document.getElementById('native');panel.replaceChildren();document.getElementById('total-time').textContent='本次工具完整返回耗时：'+item.total_seconds.toFixed(3)+' 秒（包含最后的本地整理）';if(!item.native.length){const p=document.createElement('p');p.textContent='本步使用已有候选、续查状态或有效的历史月份缓存，无需调用 CLI。';panel.append(p);}item.native.forEach((call,index)=>{const card=document.createElement('div');card.className='command-step';const title=document.createElement('strong');title.textContent='命令 '+(index+1);const purpose=document.createElement('p');purpose.textContent=call.purpose;const timing=document.createElement('p');timing.className='timing';timing.textContent='从输入开始累计 '+call.elapsed_seconds.toFixed(3)+' 秒 · 本条命令 '+call.seconds.toFixed(3)+' 秒';const pre=document.createElement('pre');pre.textContent=JSON.stringify({command:call.command,revision:call.revision,content_chars:call.content_chars},null,2);card.append(title,purpose,timing,pre);panel.append(card);});}
+function renderCommands(item){const panel=document.getElementById('native');panel.replaceChildren();document.getElementById('total-time').textContent='本次工具完整返回耗时：'+item.total_seconds.toFixed(3)+' 秒（包含最后的本地整理）';if(!item.native.length){const p=document.createElement('p');p.textContent='本步使用已有候选、续查状态或有效的日志记录缓存，无需调用 CLI。';panel.append(p);}item.native.forEach((call,index)=>{const card=document.createElement('div');card.className='command-step';const title=document.createElement('strong');title.textContent='命令 '+(index+1);const purpose=document.createElement('p');purpose.textContent=call.purpose;const timing=document.createElement('p');timing.className='timing';timing.textContent='从输入开始累计 '+call.elapsed_seconds.toFixed(3)+' 秒 · 本条命令 '+call.seconds.toFixed(3)+' 秒';const pre=document.createElement('pre');pre.textContent=JSON.stringify({command:call.command,revision:call.revision,content_chars:call.content_chars},null,2);card.append(title,purpose,timing,pre);panel.append(card);});}
 /** 将 result 的关键状态转为可读字段和列表；无返回值，完整字段仍可展开核对。 */
 function renderResult(result){const panel=document.getElementById('readable');panel.replaceChildren();const lines=[];if(result.results){lines.push('本页 '+result.results.length+' 条'+(result.total_in_snapshot!==undefined?'；快照共 '+result.total_in_snapshot+' 条':''));result.results.forEach(r=>{lines.push((r.date||'')+' '+(r.title||r.input)+(r.summary_chars!==undefined?'；原摘要 '+r.summary_chars+' 字符':''));if(r.snippet)lines.push('命中片段：'+r.snippet);if(r.snippet_status)lines.push('该候选为评论命中，未交付评论片段');if(r.summary)lines.push('社区原摘要：'+r.summary);});if(result.next_cursor)lines.push('可继续检索：可能取已有结果，也可能推进下一批匹配');if(result.status==='finished')lines.push('本次范围内的处理已结束');if(result.notice)lines.push(result.notice);}if(result.coverage){lines.push('原生候选 '+result.coverage.native_candidates+' 个；已读取 '+result.coverage.native_pages+' 页');lines.push('未关联候选 '+result.coverage.unmatched_candidate_count+' 个，未当作没有摘要');}if(result.units){result.units.forEach(u=>lines.push('　'.repeat(u.depth-1)+u.title+'（第 '+u.depth+' 层）'));}if(result.hits){lines.push('命中 '+result.hit_count+' 个顶层单位；补全 '+result.expanded_containers+' 个容器');result.hits.forEach(h=>lines.push(h.section_chain.map(s=>s.title).join(' → ')+(h.container_expanded?'；容器已补全':'')));}if(result.markdown_path){lines.push('正文范围：'+(result.scope==='full'?'全文':'所选完整章节'));lines.push('合并后 '+result.actual_ranges.length+' 段；文内图片 '+Object.keys(result.images).length+' 张');lines.push('Markdown：'+result.markdown_path);lines.push(result.warnings.length?'素材存在未完成项':'本次素材均已获取');}lines.forEach(text=>{const p=document.createElement('p');p.textContent=text;panel.append(p);});}
 /** 进入下一个真实场景；无参数、无返回值，末尾回到第一步。 */
@@ -141,6 +141,30 @@ def run_demo(output):
     checks["首屏工作量"] = "1 批原生候选 + 当月章节和近期日志；未扫描全部候选或历史月份"
     checks["渐进分页"] = "每页最多 3 条，前两页无重复；未匹配项保留，跨月不作为排除依据"
 
+    warm_search, warm_context = capture("检索定向复用缓存", "重新执行原生搜索取得当前候选，随后按 token 命中已有记录；不重新读取当月日志。",
+        {"query": "RAG", "演示前置": "已执行过一次检索"}, "search", query="RAG")
+    assert warm_search["results"] == search["results"]
+    assert len(warm_context.calls) == 1 and warm_context.diagnostics["months_read"] == []
+    assert warm_context.calls[0]["arguments"][:2] == ["drive", "+search"]
+    checks["检索缓存直达"] = "相同查询首屏结果相等；仅 1 次 drive 搜索，0 次日志请求"
+
+    # 单独复制已有月份并模拟过期，不影响后续摘要演示的缓存前置。
+    stale_cache = output / "PROTOTYPE-wipe-me-search-expired"
+    current_month = str(MonthlyLogs(first).today)[:7]
+    stale_path = MonthlyLogs(Prototype(stale_cache)).cache_path(current_month)
+    stale_month = json.loads(MonthlyLogs(first).cache_path(current_month).read_text())
+    stale_month["fetched_at"] = time.time() - HISTORY_TTL_SECONDS - 1
+    write_json(stale_path, stale_month)
+    stale_before = stale_path.read_text()
+    stale_search, stale_context = capture("检索过期定点刷新", "原生候选命中过期记录，只刷新第一个已知条目并返回；其余待需要时继续，不一次刷新整批候选。",
+        {"query": "RAG", "演示前置": "独立复制当月缓存并将年龄设为七天以前"}, "search",
+        cache_override=stale_cache, query="RAG")
+    assert len(stale_search["results"]) == 1 and stale_search["next_cursor"]
+    assert stale_search["results"][0] == search["results"][0]
+    assert len(stale_context.calls) == 2 and "range" in stale_context.calls[1]["arguments"]
+    assert stale_path.read_text() == stale_before
+    checks["检索定点刷新"] = "1 次 drive 搜索 + 1 次条目 range，未重读整月；整月期限保持不变"
+
     dates_only, cached = capture("按日期发现", "先按日期选择月份，只读取 2026 年 9 月；月内实际遇到重复文章才保留最近一次。不附摘要。",
         {"since": "2026-09-01", "until": "2026-09-30"}, "search", since="2026-09-01", until="2026-09-30")
     assert [source["month"] for source in cached.sources] == ["2026-09"]
@@ -156,7 +180,7 @@ def run_demo(output):
     _, cross_topic = capture("跨主题复用历史缓存", "更换查询词仍要执行 drive 搜索；9 月日志使用刚取得的缓存，不请求修订号或正文。",
         {"query": "Agent", "since": "2026-09-01", "until": "2026-09-30"}, "search",
         query="Agent", since="2026-09-01", until="2026-09-30")
-    assert cross_topic.sources[0]["cache_hit"]
+    assert cross_topic.diagnostics["record_actions"] or any(source["cache_hit"] for source in cross_topic.sources)
     assert all(c["arguments"][:2] == ["drive", "+search"] for c in cross_topic.calls)
     # 只模拟缓存年龄，不模拟外部响应；过期后章节仍通过真实只读请求获取。
     cached_month["fetched_at"] = time.time() - HISTORY_TTL_SECONDS - 1
@@ -201,6 +225,12 @@ def run_demo(output):
         {"articles": [old_article["article_id"]]}, "summaries", cache_override=cold_cache,
         articles=[old_article["article_id"]])
     assert old_reused.calls == []
+    old_search, old_search_context = capture("检索直达旧记录", "之前为摘要取得的历史日志也能被检索复用；重新搜索候选后直接匹配，不再逐月寻找这篇旧文章。",
+        {"query": "鸡同鸭讲", "演示前置": "共享刚才旧文章摘要查找的缓存"}, "search", cache_override=cold_cache,
+        query="鸡同鸭讲")
+    assert old_article["article_id"] in [row["article_id"] for row in old_search["results"]]
+    assert len(old_search_context.calls) == 1 and old_search_context.diagnostics["months_read"] == []
+    checks["跨工具复用"] = "摘要找到的旧文章可供检索直接匹配；仅 1 次 drive 搜索，0 次日志请求"
     checks["陌生文章缺口"] = f"旧文章首次 {len(cold_context.calls)} 次读取，再次 0 次；首次没有假装已知日志位置"
 
     # 沿同一真实会话继续，确认原生下一页确实在需要时才发生，而非仅做本地切片。

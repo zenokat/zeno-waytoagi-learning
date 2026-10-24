@@ -1,7 +1,7 @@
 """原摘要读取：先匹配已有记录，过期按日志块刷新，陌生文章才逐月查找。
 
 月份缓存与单条刷新分别计时；摘要复用已取得的记录，不证明文章在其他日志是否又有更新。
-新检索的当月正常请求规则不变，本模块不将单条刷新写成整月已更新。
+检索与摘要共用条目索引和定点刷新；单条刷新不能代表整月已更新。
 """
 
 from datetime import date
@@ -32,8 +32,8 @@ def record_cache_path(context):
     return context.cache / f"summary-records-{key}.json"
 
 
-def cached_records(logs):
-    """从 logs 所属配置的本地月缓存与条目缓存建立 token 索引；返回记录及各自获取时间。"""
+def cached_records(logs, since=None, until=None):
+    """从 logs 的本地缓存建立 token 索引；先按可选 since/until 筛日期，返回记录及获取时间。"""
     candidates = []
     for month in logs.anchors["months"]:
         cached = load_cache(logs.cache_path(month))
@@ -48,6 +48,8 @@ def cached_records(logs):
         if not isinstance(item.get("fetched_at"), (int, float)):
             continue
         token, row = item["record"]["article_id"], item["record"]
+        if (since and row["date"] < since) or (until and row["date"] > until):
+            continue
         # 先选有效记录；只有没有有效记录时，才使用过期记录中的位置刷新。
         # 同类记录再按已观测日期选新，避免为了追求范围外的最新更新破坏零请求复用。
         rank = (0 <= now - item["fetched_at"] < HISTORY_TTL_SECONDS, row["date"], item["fetched_at"])

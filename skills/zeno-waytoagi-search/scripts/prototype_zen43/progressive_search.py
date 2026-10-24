@@ -1,6 +1,7 @@
 """默认三条的渐进检索：保存候选与月度匹配进度，按需继续，不以创建月份丢弃文章。
 
-一次提交最多推进一批原生候选或一个月份（首轮同时初始化二者）。
+先按候选 token 定向匹配缓存；过期定点刷新，未知记录才逐月查找。
+一次提交最多推进一批候选、一条过期记录或一个月份（首轮可取候选再做一次日志动作）。
 来源与耗时诊断仅留上下文，Agent 只收到业务结果、继续标识及必要状态。
 """
 
@@ -11,7 +12,8 @@ import re
 import time
 
 from prototype import SPACE, daily, write_json
-from monthly_logs import MonthlyLogs, merge_latest, months_between
+from monthly_logs import HISTORY_TTL_SECONDS, MonthlyLogs, merge_latest, months_between
+from summary_reader import cached_records, refresh_record
 
 PAGE_SIZE = 3
 
@@ -38,6 +40,25 @@ def fetch_candidates(context, state):
     state["native_token"] = next_token if has_more else None
     state["native_done"] = not has_more
     state["native_pages"] += 1
+
+
+def match_cached_candidates(logs, state, actions):
+    """按 state 候选和日期范围匹配本地缓存；写入有效记录及 actions，返回待定点刷新的记录。"""
+    if not state["query"]:
+        return []
+    cached = cached_records(logs, state["since"], state["until"])
+    expired = []
+    for token in state["candidates"]:
+        if token in state["records"] or token not in cached:
+            continue
+        item = cached[token]
+        row, age = item["record"], time.time() - item["fetched_at"]
+        if 0 <= age < HISTORY_TTL_SECONDS:
+            state["records"][token] = row
+            actions.append({"article_id": token, "mode": "cached_record", "date": row["date"]})
+        elif row.get("log_url") and row.get("log_block_id"):
+            expired.append(row)
+    return expired
 
 
 def fetch_month(logs, state):
@@ -75,7 +96,7 @@ def pending_work(state):
 
 def search(context, query=None, since=None, until=None, cursor=None):
     """执行一次查询或继续提交；返回最多三条业务结果、继续标识和状态，内部每步有界推进。"""
-    logs = MonthlyLogs(context)
+    logs, actions = MonthlyLogs(context), []
     if cursor:
         match = re.fullmatch(r"([a-f0-9]{24}):(\d+)", cursor)
         if not match:
@@ -104,30 +125,36 @@ def search(context, query=None, since=None, until=None, cursor=None):
         if state["months"]:
             if query:
                 fetch_candidates(context, state)
-            fetch_month(logs, state)
         else:
             state["native_done"] = True
+    expired = match_cached_candidates(logs, state, actions)
     rows = available_results(state)
-    if cursor and not rows:
+    if not rows:
         native, month = pending_work(state)
         # 两个方向交替推进，避免少数未关联候选迫使首屏扫描全部历史。
-        if month and (state["next_action"] == "month" or not native):
+        if expired:
+            row = refresh_record(context, expired.pop(0))
+            state["records"][row["article_id"]] = row
+            actions.append({"article_id": row["article_id"], "mode": "refreshed_record", "date": row["date"]})
+        elif month and (state["next_action"] == "month" or not native):
             fetch_month(logs, state)
             state["next_action"] = "native"
-        elif native:
+        elif native and cursor:
             fetch_candidates(context, state)
             state["next_action"] = "month"
+            expired = match_cached_candidates(logs, state, actions)
         rows = available_results(state)
     page = rows[:PAGE_SIZE]
     state["delivered"].extend(row["article_id"] for row in page)
     native, month = pending_work(state)
-    continuing = bool(len(rows) > PAGE_SIZE or native or month)
+    pending_refresh = any(row["article_id"] not in state["records"] for row in expired)
+    continuing = bool(len(rows) > PAGE_SIZE or native or month or pending_refresh)
     next_cursor = None
     if continuing:
         next_cursor = f"{session}:{generation+1}"
         write_json(context.cache / f"{session}-search-{generation+1}.json", state)
     unknown = set(state["candidates"]) - set(state["records"])
-    context.diagnostics = {"sources": context.sources, "native_pages": state["native_pages"],
+    context.diagnostics = {"sources": context.sources, "record_actions": actions, "native_pages": state["native_pages"],
                            "native_candidates": len(state["candidates"]),
                            "months_read": state["months"][:state["month_offset"]],
                            "unmatched_candidates": len(unknown), "delivered": len(state["delivered"])}
