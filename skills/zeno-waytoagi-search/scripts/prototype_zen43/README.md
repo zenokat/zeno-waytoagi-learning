@@ -60,4 +60,16 @@ macOS 默认临时目录不在 CLI 图片输出白名单内，所以图片与正
 
 ## 交接
 
+### 按月检索性能实验
+
+`monthly_experiment.py` 比较一次读取全部日志与逐月读取：同一原生查询、每月结果完全一致时才输出有效对照。首月获取完整原生候选，之后月份复用；没有对外 `page_size`。`monthly-fixtures.json` 是已实际观测的章节锚点，直接读指定月份，不预读其他年份。锚点若不再对应该月，实验会停止；这不是自动适配未来年份的正式实现。
+
+```bash
+python3 skills/zeno-waytoagi-search/scripts/prototype_zen43/monthly_experiment.py --rounds 3 --months 17
+```
+
+每次使用新的输出目录。输出自包含 `monthly-experiment.html`、逐月业务结果、命令作用与耗时、三轮配对统计。业务结果保留命中片段，内部诊断另外展示。页面中的“提前停止”是以真实候选顺序做的离线检查，耗时由已测调用成本拆分估算，不是独立端到端计时；不能因为一个查询恰好没漏检，就把创建日期当作社区日期。
+
+实测快照保存在 `monthly-results.json` / `monthly-experiment.html`（RAG）与 `monthly-narrow-results.json` / `monthly-narrow-experiment.html`（标题查询）。每个结果都以服务端本次返回至 `has_more=false` 的候选为基准，不承诺搜索覆盖全库。对照未控制服务端缓存，使用交替次序与三轮观测显示波动；本地内容缓存为空，但月份锚点已知。
+
 当前按“可复现的主要路径”验证；未关联搜索候选、别名覆盖、源集合完整性、服务端截断上限、评论与复杂容器、失败状态和完整命中集交付方式均按 Linear 文档所列范围交接 [边界与异常原型票](https://linear.app/zenokat/issue/ZEN-44)。看到文件已生成，不等于这些问题已经解决。

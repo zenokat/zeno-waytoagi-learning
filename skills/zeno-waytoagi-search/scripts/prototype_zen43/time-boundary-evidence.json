@@ -1,0 +1,26 @@
+{
+  "observed_at": "2026-10-24T16:17:00.893102+08:00",
+  "article_id": "YTt3wPPIeixEK5kbJPnc0YL7nTf",
+  "title": "《100 个问题》系列丛书",
+  "url": "https://waytoagi.feishu.cn/wiki/YTt3wPPIeixEK5kbJPnc0YL7nTf",
+  "obj_create_time": "1787218412",
+  "obj_edit_time": "1790696114",
+  "created_at": "2026-08-20T17:33:32+08:00",
+  "edited_at": "2026-09-29T23:35:14+08:00",
+  "community_dates": [
+    "2026-08-20",
+    "2026-08-25",
+    "2026-09-01",
+    "2026-09-08",
+    "2026-09-13",
+    "2026-09-20",
+    "2026-09-29"
+  ],
+  "in_rag_candidates": false,
+  "search_timestamp_check": {
+    "query": "RAG",
+    "sort": "create_time",
+    "candidates": 200,
+    "zero_create_time": 200
+  }
+}
