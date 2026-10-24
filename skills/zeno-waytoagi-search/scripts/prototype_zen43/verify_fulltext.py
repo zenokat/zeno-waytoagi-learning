@@ -1,4 +1,4 @@
-"""全文检索的离线行为核对：空结果成本、原始片段、章节链及修订一致性。
+"""全文检索的离线行为核对：命中章节快照、原文顺序、空结果成本及修订一致性。
 
 只替换外部 CLI 响应；实际解析和定位仍执行原型代码，不代表线上扩样验收。
 """
@@ -37,20 +37,48 @@ class FulltextChecks(unittest.TestCase):
                                        "revision_id": 1 if scope == "keyword" else self.revision}}}
 
     def test_empty_result_needs_only_keyword(self):
-        """无命中时仅查关键词，不为不存在的命中读取全文；返回空 hits。"""
+        """无命中时仅查关键词，不为不存在的命中读取全文；返回空 sections。"""
         self.keyword = ""
         result = Prototype(self.folder.name).locate("article", ["不存在"])
-        self.assertEqual(result["hits"], [])
+        self.assertEqual(result["sections"], [])
         self.assertEqual(self.scopes, ["keyword"])
 
     def test_opening_and_heading_keep_read_units(self):
         """开篇映射到开篇单位；跳级标题保留父子链，标题片段不附送正文。"""
         result = Prototype(self.folder.name).locate("article", ["关键词"])
-        self.assertEqual(result["hits"][0]["read_unit"], "@opening")
-        hit = result["hits"][1]
-        self.assertEqual([s["id"] for s in hit["section_chain"]], ["parent", "child"])
-        self.assertEqual(hit["read_unit"], "child")
-        self.assertNotIn("正文", hit["snippet_xml"])
+        self.assertEqual(result["sections"][0]["read_unit"], "@opening")
+        parent = result["sections"][1]
+        self.assertEqual(parent["read_unit"], "parent")
+        self.assertEqual(parent["hits"], [])
+        child = parent["children"][0]
+        self.assertEqual(child["read_unit"], "child")
+        self.assertNotIn("正文", child["hits"][0]["snippet_xml"])
+
+    def test_grouped_snapshot_sorts_and_prunes(self):
+        """原生乱序命中按原文排序；共用祖先只出现一次，不显示无关兄弟章，不重复子章片段。"""
+        self.full = ('<h1 id="parent">父章</h1><p id="intro">父章命中</p>'
+                     '<h3 id="a">第一节</h3><p id="a1">早片段</p><p id="a2">晚片段</p>'
+                     '<h3 id="b">无关节</h3><p id="b1">不相关</p>'
+                     '<h3 id="c">第三节</h3><p id="c1">第三节命中</p>'
+                     '<h1 id="other">无关章</h1>')
+        self.keyword = '<fragment><p id="c1">第三节命中</p><p id="a2">晚片段</p><p id="intro">父章命中</p><p id="a1">早片段</p></fragment>'
+        result = Prototype(self.folder.name).locate("article", ["关键词"])
+        self.assertEqual(len(result["sections"]), 1)
+        parent = result["sections"][0]
+        self.assertEqual([h["block_id"] for h in parent["hits"]], ["intro"])
+        self.assertEqual([s["read_unit"] for s in parent["children"]], ["a", "c"])
+        self.assertEqual([h["block_id"] for h in parent["children"][0]["hits"]], ["a1", "a2"])
+        self.assertNotIn("section_chain", json.dumps(result))
+
+    def test_no_heading_has_one_reading_unit(self):
+        """无标题文章的多处命中归入同一个全文读取单位，原文顺序保持。"""
+        self.full = '<p id="first">前文</p><p id="last">后文</p>'
+        self.keyword = '<fragment><p id="last">后文</p><p id="first">前文</p></fragment>'
+        result = Prototype(self.folder.name).locate("article", ["文"])
+        self.assertEqual(len(result["sections"]), 1)
+        section = result["sections"][0]
+        self.assertEqual(section["read_unit"], "@document")
+        self.assertEqual([h["block_id"] for h in section["hits"]], ["first", "last"])
 
     def test_changed_revision_is_rejected(self):
         """关键词与结构修订不一致时拒绝拼接；预期抛出 ValueError。"""
@@ -70,9 +98,9 @@ class FulltextChecks(unittest.TestCase):
             status = main()
         result = json.loads(output.getvalue())
         self.assertEqual(status, 0)
-        self.assertIn("hits", result)
+        self.assertIn("sections", result)
         self.assertNotIn("evidence_dir", result)
-        self.assertTrue(all("snippet_xml" in hit for hit in result["hits"]))
+        self.assertIn("snippet_xml", result["sections"][0]["hits"][0])
 
 
 if __name__ == "__main__":

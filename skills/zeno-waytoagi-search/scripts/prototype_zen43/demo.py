@@ -37,6 +37,11 @@ def compact_result(result):
     return result
 
 
+def section_nodes(sections):
+    """将 sections 命中树按原文顺序展开，返回节点列表；仅供演示核对，不改变业务 JSON。"""
+    return [node for section in sections for node in [section, *section_nodes(section["children"])]]
+
+
 def command_purpose(arguments, method):
     """根据真实 arguments 与工具 method 生成中文命令作用；返回说明字符串，不改变命令。"""
     options = dict(zip(arguments[2::2], arguments[3::2]))
@@ -230,11 +235,14 @@ def run_demo(output):
     assert children and all(len(u["parents"]) == 1 for u in children)
     checks["章节层级"] = "H1 → H3 识别为父子两层"
 
-    located, _ = capture("全文检索", "核对问题：片段是否足以判断相关性，章节链能否指导下一步阅读？本页保留全部命中片段；OR 是任一关键词命中。",
+    located, _ = capture("全文检索", "按原文顺序展示命中章节树：共享祖先只出现一次，同一章节的片段合并为数组。只保留命中章节及祖先，不补未命中分支；OR 是任一关键词命中。",
         {"article": SAMPLE, "keywords": ["MarkItDown", "MinerU"]}, "locate", article=SAMPLE, keywords=["MarkItDown", "MinerU"])
-    assert all(h["section_chain"] for h in located["hits"])
-    assert any(h["container_expanded"] for h in located["hits"])
-    for h in located["hits"]:
+    located_nodes = section_nodes(located["sections"])
+    located_hits = [h for node in located_nodes for h in node["hits"]]
+    assert any(h["container_expanded"] for h in located_hits)
+    assert len({node["read_unit"] for node in located_nodes}) == len(located_nodes)
+    assert all(node["hits"] or node["children"] for node in located_nodes)
+    for h in located_hits:
         if h["container_expanded"]:
             assert "<excerpt" not in h["snippet_xml"] and "MarkItDown" in h["snippet_xml"] and "MinerU" in h["snippet_xml"]
     # 单分支与 OR 的顶层命中集合比较，避免把嵌套节点数量说成独立命中数量。
@@ -243,27 +251,40 @@ def run_demo(output):
     single_b, _ = capture("单词 MinerU", "单独查询 MinerU；同一容器内的多处命中合并为一个顶层单位。",
         {"article": SAMPLE, "keywords": ["MinerU"]}, "locate", article=SAMPLE, keywords=["MinerU"])
     assert located["revision"] == single_a["revision"] == single_b["revision"]
-    assert {h["block_id"] for h in located["hits"]} == {h["block_id"] for h in single_a["hits"] + single_b["hits"]}
-    checks["OR 与容器"] = f"{len(located['hits'])} 个顶层命中单位；并集相等，表格补全"
+    single_hits = [h for result in (single_a, single_b) for node in section_nodes(result["sections"]) for h in node["hits"]]
+    assert {h["block_id"] for h in located_hits} == {h["block_id"] for h in single_hits}
+    checks["OR 与容器"] = f"{len(located_hits)} 个顶层命中单位；并集相等，表格补全"
+    checks["命中章节快照"] = f"{len(located_hits)} 个片段归入 {sum(bool(node['hits']) for node in located_nodes)} 个直接命中读取单位；保留祖先共 {len(located_nodes)} 个节点，共享路径只出现一次"
 
     heading, _ = capture("仅命中标题", "输入本篇唯一的章节标题；只返回命中标题，保留父章到子章的完整链，不自动展开整章正文。",
         {"article": SAMPLE, "keywords": ["安装 MarkItDown"]}, "locate", article=SAMPLE, keywords=["安装 MarkItDown"])
-    assert len(heading["hits"]) == 1 and len(heading["hits"][0]["section_chain"]) == 2
-    assert xml_root(heading["hits"][0]["snippet_xml"])[0].tag == "h3"
-    assert "Python" not in heading["hits"][0]["snippet_xml"]
+    heading_nodes = section_nodes(heading["sections"])
+    assert len(heading_nodes) == 2 and heading_nodes[0]["hits"] == []
+    assert len(heading_nodes[1]["hits"]) == 1
+    assert xml_root(heading_nodes[1]["hits"][0]["snippet_xml"])[0].tag == "h3"
+    assert "Python" not in heading_nodes[1]["hits"][0]["snippet_xml"]
     checks["标题与开篇定位"] = "标题只返回自身且保留两级章节链；OR 样本的开篇命中可用 @opening 读取"
-    assert any(h["read_unit"] == "@opening" for h in located["hits"])
+    assert any(node["read_unit"] == "@opening" for node in located_nodes)
+
+    local, _ = capture("仅局部正文命中", "关注 Python 版本要求，只呈现“动手安装吧 → 安装 MarkItDown”及其中命中段落；不附其他安装章节或全文目录。需要更多背景时，再用读取标识获取局部结构或正文。",
+        {"article": SAMPLE, "keywords": ["Python 3.10"]}, "locate", article=SAMPLE, keywords=["Python 3.10"])
+    local_nodes = section_nodes(local["sections"])
+    assert [node["read_unit"] for node in local_nodes] == [node["read_unit"] for node in heading_nodes]
+    assert local_nodes[0]["hits"] == [] and len(local_nodes[1]["hits"]) == 1
+    assert xml_root(local_nodes[1]["hits"][0]["snippet_xml"])[0].tag == "p"
+    checks["局部命中不扩目录"] = "Python 版本查询只保留父章与安装 MarkItDown 子章，不附安装 MinerU 等未命中章节"
 
     table, _ = capture("表格单行命中", "仅匹配一行中的文字，内部仍补齐整张表，包括表头和另一工具行；返回量可能大于原生命中节选。",
         {"article": SAMPLE, "keywords": ["轻量、快速，适合批量转换"]}, "locate", article=SAMPLE, keywords=["轻量、快速，适合批量转换"])
-    assert len(table["hits"]) == 1 and table["hits"][0]["container_expanded"]
-    table_xml = xml_root(table["hits"][0]["snippet_xml"])
-    assert len(list(table_xml.iter("tr"))) == 3 and "MinerU" in table["hits"][0]["snippet_xml"]
+    table_hits = [h for node in section_nodes(table["sections"]) for h in node["hits"]]
+    assert len(table_hits) == 1 and table_hits[0]["container_expanded"]
+    table_xml = xml_root(table_hits[0]["snippet_xml"])
+    assert len(list(table_xml.iter("tr"))) == 3 and "MinerU" in table_hits[0]["snippet_xml"]
     checks["表格单行补全"] = "原生单行节选补为三行完整表格，含表头及另一工具行，不额外返回表外正文"
 
     empty, empty_context = capture("全文检索无命中", "使用特定不存在的关键词，真实服务返回空内容后即结束；只做一次 keyword 请求，不再读取全文。",
         {"article": SAMPLE, "keywords": ["ZEN43_NO_MATCH_20261024"]}, "locate", article=SAMPLE, keywords=["ZEN43_NO_MATCH_20261024"])
-    assert empty["hits"] == [] and len(empty_context.calls) == 1
+    assert empty["sections"] == [] and len(empty_context.calls) == 1
     checks["全文检索无命中"] = "真实空结果只发起 1 次 keyword 请求，没有全文预读"
 
     parent = next(u for u in structure["units"] if u["id"] == children[0]["parents"][0])

@@ -102,6 +102,33 @@ def section_model(content):
     return blocks, units, positions
 
 
+def matched_section_tree(units, positions, hits):
+    """将 hits 合并为命中章节树；输入完整 units 和块 positions，返回按原文排列的根节点数组。
+
+    每个片段只放在最具体的所属章节；祖先只保留一份标题和读取标识。
+    不含命中也不是祖先的章节被省略，避免将局部检索变成全文目录。
+    """
+    grouped, retained = {}, set()
+    for hit in sorted(hits, key=lambda item: positions[item["block_id"]]):
+        index = positions[hit["block_id"]]
+        chain = [unit for unit in units if unit["start"] <= index < unit["end"]]
+        if not chain:
+            raise ValueError("命中块没有对应的章节或特殊读取单位")
+        grouped.setdefault(chain[-1]["id"], []).append(hit)
+        retained.update(unit["id"] for unit in chain)
+    roots, nodes = [], {}
+    # units 已按文章位置排列，父章必然先于子章；片段排序不依赖服务端返回顺序。
+    for unit in units:
+        if unit["id"] not in retained:
+            continue
+        node = {"read_unit": unit["id"], "title": unit["title"],
+                "hits": grouped.get(unit["id"], []), "children": []}
+        nodes[unit["id"]] = node
+        target = nodes[unit["parents"][-1]]["children"] if unit["parents"] else roots
+        target.append(node)
+    return roots
+
+
 def log_entries(content, source, current_day):
     """从日志 content 按日期标题和引用关联原摘要；输入来源与当天日期，返回记录、未解析项、年份路由。"""
     root = xml_root(content)
@@ -268,10 +295,11 @@ class Prototype:
         return {"article": article, "revision": document["revision_id"], "units": visible}
 
     def locate(self, article, keywords):
-        """在 article 中以 keywords 的 OR 查询定位；补齐章节链与 excerpt 容器，返回所有本次命中。"""
+        """在 article 中以 keywords 的 OR 查询定位；返回按原文排列、合并片段的命中章节树。"""
         hits = self.fetch(article, "keyword", keyword="|".join(keywords), context_before=0, context_after=0)
         root = xml_root(hits["content"])
-        result = {"article": article, "revision": hits["revision_id"], "keywords": keywords, "hits": [],
+        result = {"article": article, "revision": hits["revision_id"], "keywords": keywords, "sections": [],
+                  "structure_scope": "matched_sections_and_ancestors",
                   "completeness": "本次原生返回集；不保证服务端任意大文档无上限"}
         # 原生明确返回空内容时没有待补的位置；不为无命中查询再读取全文。
         if not hits["content"].strip() or not len(root):
@@ -296,11 +324,8 @@ class Prototype:
             index = positions.get(block_id)
             if index is None:
                 raise ValueError("命中块无法映射到当前全文，不猜位置")
-            chain = [u for u in units if u["start"] <= index < u["end"]]
-            output.append({"block_id": block_id, "snippet_xml": content, "container_expanded": bool(container_id),
-                           "section_chain": [{"id": u["id"], "title": u["title"]} for u in chain],
-                           "read_unit": chain[-1]["id"] if chain else "@document"})
-        result["hits"] = output
+            output.append({"block_id": block_id, "snippet_xml": content, "container_expanded": bool(container_id)})
+        result["sections"] = matched_section_tree(units, positions, output)
         return result
 
     def read(self, article, sections=None, start=None, end=None):
