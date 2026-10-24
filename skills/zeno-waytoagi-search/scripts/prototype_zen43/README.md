@@ -21,10 +21,10 @@ python3 skills/zeno-waytoagi-search/scripts/prototype_zen43/demo.py
 ## 五个独立入口
 
 ```bash
-# 原生全部候选页完成后，再关联社区日志、排序并生成快照页。
-python3 skills/zeno-waytoagi-search/scripts/prototype_zen43/prototype.py search --query RAG --page-size 3
+# 第一批原生候选与当前月日志开始匹配，默认最多返回 3 条。
+python3 skills/zeno-waytoagi-search/scripts/prototype_zen43/prototype.py search --query RAG
 
-# 纯日期发现：先归并同文章的最新记录，再筛日期。
+# 纯日期发现：只读取范围内月份；实际遇到重复文章时保留最近一次。
 python3 skills/zeno-waytoagi-search/scripts/prototype_zen43/prototype.py search --since 2026-10-01 --until 2026-10-23
 
 # 批量原始社区摘要；支持 Wiki 标识/URL，已知 docx 别名经 node-get 解析。
@@ -36,7 +36,7 @@ python3 skills/zeno-waytoagi-search/scripts/prototype_zen43/prototype.py structu
 python3 skills/zeno-waytoagi-search/scripts/prototype_zen43/prototype.py read
 ```
 
-- 下一页：`search --cursor '<上次返回的 next_cursor>' --page-size 3`，保持同一个 `--cache-dir`。
+- 继续检索：`search --cursor '<上次返回的 next_cursor>'`，保持同一个 `--cache-dir` 与配置。
 - 目录子层：`structure --section '<返回的章节 id>' --depth 1`。
 - 单章或多章：`read --sections '<章节 id>' '<另一章节 id>'`。
 - 章节范围：`read --start '<起点章节 id>' --end '<终点章节 id>'`；可仅给其中一端。
@@ -45,16 +45,27 @@ python3 skills/zeno-waytoagi-search/scripts/prototype_zen43/prototype.py read
 
 ## 文件与数据
 
-- `prototype.py`：五个统一入口、来源修订缓存、章节模型和只读调用封装。
+- `prototype.py`：五个统一入口、章节模型和只读调用封装；旧整页日志路径仅为历史性能实验保留。
+- `progressive_search.py`：原生候选与月份匹配的继续状态、最多三条交付、按需摘要查找。
+- `monthly_logs.py`：跨主题共用的月级读取与七天缓存；不检查整年修订号。
+- `verify_progressive.py`：不联网核对渐进续查、缓存期限、月初迁入与原摘要行为。
 - `demo.py`：真实场景重放、样本核对及自包含结果页生成。
-- `demo.html`：本次已执行的精简回放；只保留标题、定位、计数、调用参数及本地文件指针，不内嵌全文或评论。
+- `demo.html`：本次已执行的回放；检索与摘要展示实际业务 JSON，保留命中片段及原摘要，内部诊断单独展开。其他三个工具仍展示精简结果，不内嵌文章全文或评论。
 - `observed-checks.json`：本次机器可读核对结果，不替代 Linear 中的解释和限制。
 - `timings.json`：逐场景、逐命令的作用说明、单条与累计耗时，以及工具完整返回耗时；运行 `demo.py` 会重新生成。
 - 相邻 `waytoagi_daily.py`：仅导入已有 CLI 成功/身份校验、来源常量、行内引用解析；不修改正式脚本。
 
 原生 fetch 返回后立即剥除评论 sidecar，再落盘、解析与交付。本次业务样本没有可见评论；过滤器存在不等于复杂评论格式已全面验收。
 
-缓存和快照仅供单机、单用户实验，不是账户隔离或持久数据库。每次正常新查询检查来源修订；快照续页则复用同一次排序结果。源码变化也通过解析版本失效缓存。原型不会自动登录、改权限、降级钥匙串、升级 CLI 或写飞书内容。
+缓存和续查状态仅供单机、单用户实验，不是账户隔离或持久数据库。原型不会自动登录、改权限、降级钥匙串、升级 CLI 或写飞书内容。
+
+检索保留 `drive +search` 查询语义，以 `create_time` 倒序逐批取得原生候选；内部日志按月份从近到远读取。首次最多读取一批候选和一个月，后续先交付已匹配结果，必要时交替推进一批候选或一个月。每次最多三条，没有对外 `page_size` 或月份推进参数。结果不足三条或暂时为空时，只要仍有工作就返回 `next_cursor` 和 `can_continue`；它表示可继续处理，不保证下一次一定找到文章。未匹配候选保留，不按创建月份排除；只提供时效性偏好，不承诺全局社区日期严格倒序。
+
+社区日期先按查询范围筛选，再对实际遇到的重复文章保留最近记录，不为去重读取范围外日志。摘要读取共用月级缓存，从近到远找齐即停。检索与摘要成功输出只含业务字段；调用记录和缓存诊断留在本地证据与演示内部区域。
+
+当月每次需要读取时正常请求月份章节和近期日志；月初前八天将上月也视作活跃月份，以覆盖近期日志的滚动迁入。历史月缓存从成功获取起有效七天，跨查询词复用；满七天后再次用到才直接重读该月，不后台刷新、不预查整年 revision。活跃月不会直接转成稳定缓存，归档期后首次使用重新读取。续查复用本次查询已取得的数据，跨日长会话的刷新规则仍待 ZEN-44；新查询按上述策略读取。
+
+月份锚点来自 `monthly-fixtures.json` 的真实观测，当前覆盖 2025-06 至 2026-10。新月份发现、标题或块删除重建引起的锚点变化、续查失效与失败恢复交 ZEN-44，本轮不自动修复锚点。
 
 macOS 默认临时目录不在 CLI 图片输出白名单内，所以图片与正文使用 `/tmp`。保留 CLI 返回的 `saved_path`，它可能自动追加扩展名。若宿主沙箱不能访问已有钥匙串，应通过宿主的正常审批在可访问钥匙串的执行环境运行，不改凭证存储方式。
 
@@ -62,7 +73,7 @@ macOS 默认临时目录不在 CLI 图片输出白名单内，所以图片与正
 
 ### 按月检索性能实验
 
-`monthly_experiment.py` 比较一次读取全部日志与逐月读取：同一原生查询、每月结果完全一致时才输出有效对照。首月获取完整原生候选，之后月份复用；没有对外 `page_size`。`monthly-fixtures.json` 是已实际观测的章节锚点，直接读指定月份，不预读其他年份。锚点若不再对应该月，实验会停止；这不是自动适配未来年份的正式实现。
+`monthly_experiment.py` 保留上一轮性能对照，不代表本轮渐进入口：比较一次读取全部日志与逐月读取，同一原生查询、每月结果完全一致时才输出有效对照。该实验首月获取完整原生候选，之后月份复用。`monthly-fixtures.json` 是已实际观测的章节锚点，直接读指定月份，不预读其他年份。锚点若不再对应该月，实验会停止；这不是自动适配未来年份的正式实现。
 
 ```bash
 python3 skills/zeno-waytoagi-search/scripts/prototype_zen43/monthly_experiment.py --rounds 3 --months 17

@@ -15,7 +15,6 @@ import re
 import sys
 import tempfile
 import time
-from urllib.parse import urlparse
 from xml.etree import ElementTree as ET
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -161,6 +160,7 @@ class Prototype:
         self.profile = profile
         self.calls = []
         self.sources = []
+        self.diagnostics = {}
 
     def call(self, arguments):
         """执行 arguments 中的只读 CLI，立即去评论；返回响应并在临时目录记录去评论后的证据。"""
@@ -245,87 +245,15 @@ class Prototype:
         data = self.call(["wiki", "+node-get", "--node-token", article, "--space-id", SPACE])["data"]
         return {key: data.get(key) for key in ("node_token", "obj_token", "obj_type", "space_id", "title")}
 
-    def search(self, query=None, since=None, until=None, page_size=5, cursor=None):
-        """执行知识库检索或续页；输入查询/日期/页大小/快照游标，返回日期倒序页及覆盖状态。"""
-        if page_size < 1:
-            raise ValueError("page_size 必须为正整数")
-        if cursor:
-            snapshot, offset = cursor.split(":")
-            if not re.fullmatch(r"[a-f0-9]{24}", snapshot):
-                raise ValueError("无效原型游标")
-            saved = json.loads((self.cache / (snapshot + ".snapshot.json")).read_text())
-            rows, start, coverage = saved["rows"], int(offset), saved["coverage"]
-        else:
-            if not query and not since and not until:
-                raise ValueError("查询语句、日期范围至少一项")
-            if query and len(query) > 30:
-                raise ValueError("查询最多 30 个字符，不截短")
-            for day in (since, until):
-                if day and date.fromisoformat(day) < daily.SUPPORTED_FROM:
-                    raise ValueError("日志支持起点为 2025-06-01")
-            if since and until and since > until:
-                raise ValueError("开始日期晚于结束日期")
-            pool = self.pool()
-            candidates, pages = {}, 0
-            if query:
-                token = None
-                while True:
-                    args = ["drive", "+search", "--query", query, "--space-ids", SPACE, "--page-size", "20"]
-                    if token:
-                        args += ["--page-token", token]
-                    data = self.call(args)["data"]
-                    pages += 1
-                    if data.get("notice"):
-                        raise ValueError("原生搜索含 notice，需核对")
-                    for item in data.get("results", []):
-                        candidates[item["result_meta"]["token"]] = item
-                    if not data.get("has_more"):
-                        break
-                    token = data["page_token"]
-                selected = {key: value for key, value in pool.items() if key in candidates}
-            else:
-                selected = pool
-            rows = []
-            for key, item in selected.items():
-                if (since and item["date"] < since) or (until and item["date"] > until):
-                    continue
-                row = {field: item[field] for field in ("article_id", "url", "title", "date")}
-                if query:
-                    candidate = candidates[key]
-                    # 评论定位片段不交付；此类候选须后续通过正文定位决定，不伪装可靠片段。
-                    if "comment_id" in candidate["result_meta"].get("url", ""):
-                        row["snippet_status"] = "comment_match_not_delivered"
-                    else:
-                        row["snippet"] = candidate.get("summary_highlighted", "")
-                rows.append(row)
-            rows.sort(key=lambda row: (row["date"], row["article_id"]), reverse=True)
-            unknown = sorted(set(candidates) - set(pool)) if query else []
-            coverage = {"sources": self.sources, "native_pages": pages, "native_candidates": len(candidates),
-                        "eligible_pool": len(pool), "unmatched_candidate_count": len(unknown),
-                        "unmatched_sample": unknown[:5], "server_recall_guaranteed": False,
-                        "status": "sample_pipeline_only" if unknown or any(s["unsupported"] for s in self.sources) else "observed_sources"}
-            snapshot = hashlib.sha256((str(time.time_ns()) + str(self.run_dir)).encode()).hexdigest()[:24]
-            write_json(self.cache / (snapshot + ".snapshot.json"), {"rows": rows, "coverage": coverage,
-                        "query": query, "since": since, "until": until})
-            start = 0
-        end = start + page_size
-        return {"results": rows[start:end], "total_in_snapshot": len(rows),
-                "next_cursor": f"{snapshot}:{end}" if end < len(rows) else None, "coverage": coverage}
+    def search(self, query=None, since=None, until=None, cursor=None):
+        """执行一次默认三条的渐进检索；输入查询、日期或继续标识，返回精简业务结果。"""
+        from progressive_search import search
+        return search(self, query, since, until, cursor)
 
     def summaries(self, articles):
-        """批量读取 articles 对应的最近原摘要；返回按输入对应的结果及来源覆盖，不生成新摘要。"""
-        pool = self.pool()
-        results = []
-        for article in articles:
-            token = urlparse(article).path.rstrip("/").rsplit("/", 1)[-1] if "://" in article else article
-            if token not in self.latest_records:
-                token = self.resolve(article)["node_token"]
-            record = pool.get(token)
-            if record:
-                results.append({"input": article, "status": "found", **record})
-            else:
-                results.append({"input": article, "status": "not_found_in_observed_logs", "article_id": token})
-        return {"results": results, "sources": self.sources}
+        """按月从近往远查找 articles 的原摘要；共用七天历史缓存，找齐即停。"""
+        from progressive_search import summaries
+        return summaries(self, articles)
 
     def structure(self, article, section=None, depth=1):
         """获取 article 在 section 下 depth 层实际标题；返回可读取单位，depth=1 表示直接子层。"""
@@ -441,7 +369,6 @@ def main():
     parser.add_argument("--query")
     parser.add_argument("--since")
     parser.add_argument("--until")
-    parser.add_argument("--page-size", type=int, default=5)
     parser.add_argument("--cursor")
     parser.add_argument("--keywords", nargs="+", default=["MarkItDown", "MinerU"])
     parser.add_argument("--section")
@@ -455,7 +382,7 @@ def main():
     prototype = Prototype(args.cache_dir, args.profile)
     try:
         if args.tool == "search":
-            result = prototype.search(args.query, args.since, args.until, args.page_size, args.cursor)
+            result = prototype.search(args.query, args.since, args.until, args.cursor)
         elif args.tool == "summaries":
             result = prototype.summaries(args.articles or [args.article])
         elif args.tool == "structure":
@@ -465,7 +392,10 @@ def main():
         else:
             result = prototype.read(args.article, args.sections, args.start, args.end)
         write_json(prototype.run_dir / "calls.json", prototype.calls)
-        print(json.dumps({"result": result, "evidence_dir": str(prototype.run_dir)}, ensure_ascii=False, indent=2))
+        write_json(prototype.run_dir / "diagnostics.json", prototype.diagnostics)
+        # 已迭代的检索和摘要入口直接交付业务 JSON，诊断留本地，避免占用 Agent 阅读预算。
+        output = result if args.tool in {"search", "summaries"} else {"result": result, "evidence_dir": str(prototype.run_dir)}
+        print(json.dumps(output, ensure_ascii=False, indent=2))
         return 0
     except (ValueError, KeyError, OSError, ET.ParseError) as error:
         write_json(prototype.run_dir / "calls.json", prototype.calls)
