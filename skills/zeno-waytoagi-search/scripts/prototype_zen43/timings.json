@@ -1,0 +1,1206 @@
+{
+  "recorded_at": "2026-10-24T15:16:09+08:00",
+  "unit": "seconds",
+  "definition": "每个场景从本次工具接收输入起独立计时；elapsed_seconds 截止该命令返回，total_seconds 截止工具完成本地整理。",
+  "scenarios": [
+    {
+      "name": "知识库检索",
+      "input": {
+        "query": "RAG",
+        "page_size": 3
+      },
+      "total_seconds": 18.87,
+      "commands": [
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/QPe5w5g7UisbEkkow8XcDmOpn8e",
+            "--scope",
+            "outline",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取浅层目录与修订号，检查日志是否更新；近期入口还用它定位日志板块。",
+          "revision": 126396,
+          "seconds": 0.806,
+          "elapsed_seconds": 0.807,
+          "content_chars": 641
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/QPe5w5g7UisbEkkow8XcDmOpn8e",
+            "--scope",
+            "section",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "-1",
+            "--start-block-id",
+            "ZweodGwa8oKukcxBhRncSEFCnlx",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "完整读取近期更新日志板块，供内部解析文章引用、社区日期和原始摘要。",
+          "revision": 126396,
+          "seconds": 0.914,
+          "elapsed_seconds": 1.723,
+          "content_chars": 22188
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/FjiOwWp2giA7hRk6jjfcPioCnAc",
+            "--scope",
+            "outline",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取浅层目录与修订号，检查日志是否更新；近期入口还用它定位日志板块。",
+          "revision": 3289,
+          "seconds": 1.221,
+          "elapsed_seconds": 2.949,
+          "content_chars": 55
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/FjiOwWp2giA7hRk6jjfcPioCnAc",
+            "--scope",
+            "full",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "-1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "完整读取历史日志页，解析日期、文章引用、原始摘要及年度归档入口。",
+          "revision": 3289,
+          "seconds": 3.2,
+          "elapsed_seconds": 6.151,
+          "content_chars": 880334
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/GL7xwM3fyitr4kkiv76c1GHjnNg",
+            "--scope",
+            "outline",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取浅层目录与修订号，检查日志是否更新；近期入口还用它定位日志板块。",
+          "revision": 70,
+          "seconds": 1.027,
+          "elapsed_seconds": 7.219,
+          "content_chars": 55
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/GL7xwM3fyitr4kkiv76c1GHjnNg",
+            "--scope",
+            "full",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "-1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "完整读取历史日志页，解析日期、文章引用、原始摘要及年度归档入口。",
+          "revision": 70,
+          "seconds": 3.492,
+          "elapsed_seconds": 10.712,
+          "content_chars": 886072
+        },
+        {
+          "command": [
+            "drive",
+            "+search",
+            "--query",
+            "RAG",
+            "--space-ids",
+            "7226178700923011075",
+            "--page-size",
+            "20",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "在 WaytoAGI 知识库执行查询，取得第一页原生搜索候选。",
+          "revision": null,
+          "seconds": 1.362,
+          "elapsed_seconds": 12.106,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "drive",
+            "+search",
+            "--query",
+            "RAG",
+            "--space-ids",
+            "7226178700923011075",
+            "--page-size",
+            "20",
+            "--page-token",
+            "<原生续页令牌，仅本地保留>",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "继续获取下一页原生搜索候选，供后续统一关联社区日期并排序。",
+          "revision": null,
+          "seconds": 0.734,
+          "elapsed_seconds": 12.841,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "drive",
+            "+search",
+            "--query",
+            "RAG",
+            "--space-ids",
+            "7226178700923011075",
+            "--page-size",
+            "20",
+            "--page-token",
+            "<原生续页令牌，仅本地保留>",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "继续获取下一页原生搜索候选，供后续统一关联社区日期并排序。",
+          "revision": null,
+          "seconds": 0.796,
+          "elapsed_seconds": 13.638,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "drive",
+            "+search",
+            "--query",
+            "RAG",
+            "--space-ids",
+            "7226178700923011075",
+            "--page-size",
+            "20",
+            "--page-token",
+            "<原生续页令牌，仅本地保留>",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "继续获取下一页原生搜索候选，供后续统一关联社区日期并排序。",
+          "revision": null,
+          "seconds": 0.784,
+          "elapsed_seconds": 14.422,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "drive",
+            "+search",
+            "--query",
+            "RAG",
+            "--space-ids",
+            "7226178700923011075",
+            "--page-size",
+            "20",
+            "--page-token",
+            "<原生续页令牌，仅本地保留>",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "继续获取下一页原生搜索候选，供后续统一关联社区日期并排序。",
+          "revision": null,
+          "seconds": 0.71,
+          "elapsed_seconds": 15.133,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "drive",
+            "+search",
+            "--query",
+            "RAG",
+            "--space-ids",
+            "7226178700923011075",
+            "--page-size",
+            "20",
+            "--page-token",
+            "<原生续页令牌，仅本地保留>",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "继续获取下一页原生搜索候选，供后续统一关联社区日期并排序。",
+          "revision": null,
+          "seconds": 0.775,
+          "elapsed_seconds": 15.909,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "drive",
+            "+search",
+            "--query",
+            "RAG",
+            "--space-ids",
+            "7226178700923011075",
+            "--page-size",
+            "20",
+            "--page-token",
+            "<原生续页令牌，仅本地保留>",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "继续获取下一页原生搜索候选，供后续统一关联社区日期并排序。",
+          "revision": null,
+          "seconds": 0.772,
+          "elapsed_seconds": 16.683,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "drive",
+            "+search",
+            "--query",
+            "RAG",
+            "--space-ids",
+            "7226178700923011075",
+            "--page-size",
+            "20",
+            "--page-token",
+            "<原生续页令牌，仅本地保留>",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "继续获取下一页原生搜索候选，供后续统一关联社区日期并排序。",
+          "revision": null,
+          "seconds": 0.703,
+          "elapsed_seconds": 17.387,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "drive",
+            "+search",
+            "--query",
+            "RAG",
+            "--space-ids",
+            "7226178700923011075",
+            "--page-size",
+            "20",
+            "--page-token",
+            "<原生续页令牌，仅本地保留>",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "继续获取下一页原生搜索候选，供后续统一关联社区日期并排序。",
+          "revision": null,
+          "seconds": 0.73,
+          "elapsed_seconds": 18.119,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "drive",
+            "+search",
+            "--query",
+            "RAG",
+            "--space-ids",
+            "7226178700923011075",
+            "--page-size",
+            "20",
+            "--page-token",
+            "<原生续页令牌，仅本地保留>",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "继续获取下一页原生搜索候选，供后续统一关联社区日期并排序。",
+          "revision": null,
+          "seconds": 0.747,
+          "elapsed_seconds": 18.868,
+          "content_chars": 0
+        }
+      ]
+    },
+    {
+      "name": "检索下一页",
+      "input": {
+        "cursor": "上一页返回的游标",
+        "page_size": 3
+      },
+      "total_seconds": 0.002,
+      "commands": []
+    },
+    {
+      "name": "按日期发现",
+      "input": {
+        "since": "2026-09-01",
+        "until": "2026-09-30"
+      },
+      "total_seconds": 2.828,
+      "commands": [
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/QPe5w5g7UisbEkkow8XcDmOpn8e",
+            "--scope",
+            "outline",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取浅层目录与修订号，检查日志是否更新；近期入口还用它定位日志板块。",
+          "revision": 126396,
+          "seconds": 0.588,
+          "elapsed_seconds": 0.589,
+          "content_chars": 641
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/FjiOwWp2giA7hRk6jjfcPioCnAc",
+            "--scope",
+            "outline",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取浅层目录与修订号，检查日志是否更新；近期入口还用它定位日志板块。",
+          "revision": 3289,
+          "seconds": 1.075,
+          "elapsed_seconds": 1.665,
+          "content_chars": 55
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/GL7xwM3fyitr4kkiv76c1GHjnNg",
+            "--scope",
+            "outline",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取浅层目录与修订号，检查日志是否更新；近期入口还用它定位日志板块。",
+          "revision": 70,
+          "seconds": 1.14,
+          "elapsed_seconds": 2.819,
+          "content_chars": 55
+        }
+      ]
+    },
+    {
+      "name": "摘要读取",
+      "input": {
+        "articles": [
+          "OofFwRLQZillgVk6rQxcwKWbnHc",
+          "YTt3wPPIeixEK5kbJPnc0YL7nTf"
+        ]
+      },
+      "total_seconds": 2.465,
+      "commands": [
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/QPe5w5g7UisbEkkow8XcDmOpn8e",
+            "--scope",
+            "outline",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取浅层目录与修订号，检查日志是否更新；近期入口还用它定位日志板块。",
+          "revision": 126396,
+          "seconds": 0.513,
+          "elapsed_seconds": 0.514,
+          "content_chars": 641
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/FjiOwWp2giA7hRk6jjfcPioCnAc",
+            "--scope",
+            "outline",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取浅层目录与修订号，检查日志是否更新；近期入口还用它定位日志板块。",
+          "revision": 3289,
+          "seconds": 1.099,
+          "elapsed_seconds": 1.614,
+          "content_chars": 55
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/GL7xwM3fyitr4kkiv76c1GHjnNg",
+            "--scope",
+            "outline",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取浅层目录与修订号，检查日志是否更新；近期入口还用它定位日志板块。",
+          "revision": 70,
+          "seconds": 0.841,
+          "elapsed_seconds": 2.461,
+          "content_chars": 55
+        }
+      ]
+    },
+    {
+      "name": "篇章结构获取",
+      "input": {
+        "article": "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+        "depth": 2
+      },
+      "total_seconds": 0.729,
+      "commands": [
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+            "--scope",
+            "full",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "-1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取完整 XML 与块标识，建立真实章节层级、块归属及完整章节边界。",
+          "revision": 71,
+          "seconds": 0.726,
+          "elapsed_seconds": 0.726,
+          "content_chars": 15248
+        }
+      ]
+    },
+    {
+      "name": "全文检索",
+      "input": {
+        "article": "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+        "keywords": [
+          "MarkItDown",
+          "MinerU"
+        ]
+      },
+      "total_seconds": 1.671,
+      "commands": [
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+            "--scope",
+            "full",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "-1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取完整 XML 与块标识，建立真实章节层级、块归属及完整章节边界。",
+          "revision": 71,
+          "seconds": 0.486,
+          "elapsed_seconds": 0.487,
+          "content_chars": 15248
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+            "--scope",
+            "keyword",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "-1",
+            "--keyword",
+            "MarkItDown|MinerU",
+            "--context-before",
+            "0",
+            "--context-after",
+            "0",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "按 OR 关键词查找文内命中块或容器节选，随后补齐所属章节链。",
+          "revision": 71,
+          "seconds": 0.474,
+          "elapsed_seconds": 0.963,
+          "content_chars": 3119
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+            "--scope",
+            "range",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "-1",
+            "--start-block-id",
+            "WFsZd9k0xoOgSixcCZjc7KMonOf",
+            "--end-block-id",
+            "WFsZd9k0xoOgSixcCZjc7KMonOf",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "按命中的顶层容器标识补读完整容器，避免只交付表格或容器节选。",
+          "revision": 71,
+          "seconds": 0.705,
+          "elapsed_seconds": 1.67,
+          "content_chars": 812
+        }
+      ]
+    },
+    {
+      "name": "正文读取",
+      "input": {
+        "article": "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+        "sections": [
+          "doxcnrfmssEtcglyPR2rM2cjlcb",
+          "doxcnUVnD2RsbnIBVlqbUP7Nleg"
+        ]
+      },
+      "total_seconds": 6.014,
+      "commands": [
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+            "--scope",
+            "full",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "-1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取完整 XML 与块标识，建立真实章节层级、块归属及完整章节边界。",
+          "revision": 71,
+          "seconds": 0.585,
+          "elapsed_seconds": 0.585,
+          "content_chars": 15248
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+            "--scope",
+            "range",
+            "--doc-format",
+            "markdown",
+            "--detail",
+            "simple",
+            "--max-depth",
+            "-1",
+            "--start-block-id",
+            "doxcnrfmssEtcglyPR2rM2cjlcb",
+            "--end-block-id",
+            "doxcnLnohLysszUxV182FBOBLbd",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取计算后的完整章节区间，取得 Markdown 正文。",
+          "revision": 71,
+          "seconds": 0.92,
+          "elapsed_seconds": 1.508,
+          "content_chars": 2769
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "FgFnb4LZYoyeiwxWPy6cRrrenRf",
+            "--output",
+            "/private/tmp/zen43-body-i7c09ugc/FgFnb4LZYoyeiwxWPy6cRrrenRf",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 0.995,
+          "elapsed_seconds": 2.504,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "CEMjbJM4goj50exy0RVcQD3In6f",
+            "--output",
+            "/private/tmp/zen43-body-i7c09ugc/CEMjbJM4goj50exy0RVcQD3In6f",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 1.379,
+          "elapsed_seconds": 3.883,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "QztFbvbvPoDWJOxt9tXc469inid",
+            "--output",
+            "/private/tmp/zen43-body-i7c09ugc/QztFbvbvPoDWJOxt9tXc469inid",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 1.083,
+          "elapsed_seconds": 4.968,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "JQjObK47ZoZiXpxzFgZcSjDHndh",
+            "--output",
+            "/private/tmp/zen43-body-i7c09ugc/JQjObK47ZoZiXpxzFgZcSjDHndh",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 1.043,
+          "elapsed_seconds": 6.012,
+          "content_chars": 0
+        }
+      ]
+    },
+    {
+      "name": "完整章节范围",
+      "input": {
+        "article": "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+        "start": "doxcnUVnD2RsbnIBVlqbUP7Nleg",
+        "end": "doxcnT1zVZKgY66BtLrEm5yzHsg"
+      },
+      "total_seconds": 2.157,
+      "commands": [
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+            "--scope",
+            "full",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "-1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取完整 XML 与块标识，建立真实章节层级、块归属及完整章节边界。",
+          "revision": 71,
+          "seconds": 0.632,
+          "elapsed_seconds": 0.633,
+          "content_chars": 15248
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+            "--scope",
+            "range",
+            "--doc-format",
+            "markdown",
+            "--detail",
+            "simple",
+            "--max-depth",
+            "-1",
+            "--start-block-id",
+            "doxcnUVnD2RsbnIBVlqbUP7Nleg",
+            "--end-block-id",
+            "doxcnC88Z3EsAl19OpKRYTaxahd",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取计算后的完整章节区间，取得 Markdown 正文。",
+          "revision": 71,
+          "seconds": 0.492,
+          "elapsed_seconds": 1.129,
+          "content_chars": 955
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "CEMjbJM4goj50exy0RVcQD3In6f",
+            "--output",
+            "/private/tmp/zen43-body-y5vdbh81/CEMjbJM4goj50exy0RVcQD3In6f",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 1.026,
+          "elapsed_seconds": 2.156,
+          "content_chars": 0
+        }
+      ]
+    },
+    {
+      "name": "全文读取",
+      "input": {
+        "article": "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd"
+      },
+      "total_seconds": 13.858,
+      "commands": [
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+            "--scope",
+            "full",
+            "--doc-format",
+            "xml",
+            "--detail",
+            "with-ids",
+            "--max-depth",
+            "-1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取完整 XML 与块标识，建立真实章节层级、块归属及完整章节边界。",
+          "revision": 71,
+          "seconds": 0.578,
+          "elapsed_seconds": 0.578,
+          "content_chars": 15248
+        },
+        {
+          "command": [
+            "docs",
+            "+fetch",
+            "--doc",
+            "https://waytoagi.feishu.cn/wiki/HwMqw2TTpirl1Ykh5MhcfMEXnxd",
+            "--scope",
+            "full",
+            "--doc-format",
+            "markdown",
+            "--detail",
+            "simple",
+            "--max-depth",
+            "-1",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "读取全文 Markdown，保留文章标题与正文结构，随后处理文内图片。",
+          "revision": 71,
+          "seconds": 0.683,
+          "elapsed_seconds": 1.265,
+          "content_chars": 7235
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "FlSlb18o0oz5EYxjz2wcFRtDnTf",
+            "--output",
+            "/private/tmp/zen43-body-5wudws0k/FlSlb18o0oz5EYxjz2wcFRtDnTf",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 1.097,
+          "elapsed_seconds": 2.363,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "XYOabwQx3oBQg1x3e5rcDMf1nEf",
+            "--output",
+            "/private/tmp/zen43-body-5wudws0k/XYOabwQx3oBQg1x3e5rcDMf1nEf",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 1.16,
+          "elapsed_seconds": 3.524,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "IoDibWTO3oWsOYxDBIwcJfzmnlh",
+            "--output",
+            "/private/tmp/zen43-body-5wudws0k/IoDibWTO3oWsOYxDBIwcJfzmnlh",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 0.945,
+          "elapsed_seconds": 4.47,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "PzIRbqUN2olTD3xnSNxcRtYYnSY",
+            "--output",
+            "/private/tmp/zen43-body-5wudws0k/PzIRbqUN2olTD3xnSNxcRtYYnSY",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 1.04,
+          "elapsed_seconds": 5.511,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "FgFnb4LZYoyeiwxWPy6cRrrenRf",
+            "--output",
+            "/private/tmp/zen43-body-5wudws0k/FgFnb4LZYoyeiwxWPy6cRrrenRf",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 1.052,
+          "elapsed_seconds": 6.564,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "CEMjbJM4goj50exy0RVcQD3In6f",
+            "--output",
+            "/private/tmp/zen43-body-5wudws0k/CEMjbJM4goj50exy0RVcQD3In6f",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 1.169,
+          "elapsed_seconds": 7.735,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "QztFbvbvPoDWJOxt9tXc469inid",
+            "--output",
+            "/private/tmp/zen43-body-5wudws0k/QztFbvbvPoDWJOxt9tXc469inid",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 0.963,
+          "elapsed_seconds": 8.699,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "JQjObK47ZoZiXpxzFgZcSjDHndh",
+            "--output",
+            "/private/tmp/zen43-body-5wudws0k/JQjObK47ZoZiXpxzFgZcSjDHndh",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 0.968,
+          "elapsed_seconds": 9.668,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "GiBCbsgoQopfzFxlNbwcGS0un3e",
+            "--output",
+            "/private/tmp/zen43-body-5wudws0k/GiBCbsgoQopfzFxlNbwcGS0un3e",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 1.111,
+          "elapsed_seconds": 10.78,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "BquubaupLoEIA4x62Jcce1ZDnVh",
+            "--output",
+            "/private/tmp/zen43-body-5wudws0k/BquubaupLoEIA4x62Jcce1ZDnVh",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 1.978,
+          "elapsed_seconds": 12.76,
+          "content_chars": 0
+        },
+        {
+          "command": [
+            "docs",
+            "+media-preview",
+            "--token",
+            "TIAtbY5mgoD6zVxo6ZgcMqE0nYe",
+            "--output",
+            "/private/tmp/zen43-body-5wudws0k/TIAtbY5mgoD6zVxo6ZgcMqE0nYe",
+            "--as",
+            "user",
+            "--format",
+            "json"
+          ],
+          "purpose": "下载所选正文中引用的这一张图片，取得可嵌入 Markdown 的本地绝对路径。",
+          "revision": null,
+          "seconds": 1.093,
+          "elapsed_seconds": 13.854,
+          "content_chars": 0
+        }
+      ]
+    }
+  ]
+}

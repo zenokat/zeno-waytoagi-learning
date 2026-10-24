@@ -154,6 +154,7 @@ class Prototype:
 
     def __init__(self, cache_dir, profile=None):
         """以 cache_dir 和可选 profile 初始化原型；返回实例，目录仅保存可清除实验数据。"""
+        self.input_started = time.monotonic()
         self.cache = Path(cache_dir).resolve()
         self.cache.mkdir(parents=True, exist_ok=True)
         self.run_dir = Path(tempfile.mkdtemp(prefix="zen43-run-"))
@@ -170,10 +171,13 @@ class Prototype:
             args += ["--profile", self.profile]
         started = time.monotonic()
         response = daily.run_cli(args)
+        # 记录真实返回时刻；累积时间包含此前调用及其间的本地解析，不用单次耗时求和替代。
+        completed = time.monotonic()
         removed = strip_comments(response)
         path = write_json(self.run_dir / f"call-{len(self.calls) + 1:03}.json", response)
         document = response.get("data", {}).get("document", {})
-        self.calls.append({"arguments": args, "seconds": round(time.monotonic() - started, 3),
+        self.calls.append({"arguments": args, "seconds": round(completed - started, 3),
+                           "elapsed_seconds": round(completed - self.input_started, 3),
                            "evidence_path": path, "revision": document.get("revision_id"),
                            "content_chars": len(document.get("content", "")), "comments_removed": removed})
         return response
