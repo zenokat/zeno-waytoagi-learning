@@ -41,7 +41,7 @@ const evidence=PAYLOAD;
 const groups=[
   {name:'知识库检索',description:'发现文章，核对渐进检索与缓存复用。',names:['知识库检索','检索下一页','检索定向复用缓存','检索过期定点刷新','按日期发现','跨主题复用历史缓存','七天到期再读取','检索直达旧记录'],checks:['首屏工作量','渐进分页','检索缓存直达','检索定点刷新','重复更新','历史缓存','跨工具复用','按需原生续页']},
   {name:'摘要读取',description:'从已有记录到陌生文章，查看原摘要如何取得。',names:['摘要读取','摘要过期定点刷新','刷新后再读摘要','陌生旧文章摘要','旧文章再次读摘要'],checks:['摘要缓存直达','摘要定点刷新','陌生文章缺口']},
-  {name:'全文检索',description:'按原文顺序查看命中章节快照，展开同章片段，按需继续读取。',names:['全文检索','单词 MarkItDown','单词 MinerU','仅命中标题','仅局部正文命中','表格单行命中','全文检索无命中'],checks:['命中章节快照','局部命中不扩目录','OR 与容器','标题与开篇定位','表格单行补全','全文检索无命中']},
+  {name:'全文检索',description:'按原文顺序查看命中章节快照，展开同章片段，按需继续读取。',names:['全文检索','单词 MarkItDown','单词 MinerU','仅命中标题','仅局部正文命中','表格单行命中','全文检索无命中'],checks:['业务字段精简','命中章节快照','局部命中不扩目录','OR 与容器','标题与开篇定位','表格单行补全','全文检索无命中']},
   {name:'篇章结构获取',description:'按真实父子层级理解文章结构。',names:['篇章结构获取'],checks:['章节层级']},
   {name:'正文读取',description:'查看多章、章节范围和全文的读取结果。',names:['正文读取','完整章节范围','全文读取'],checks:['多章合并与图片','范围终点','全文与图片']}
 ];
@@ -111,7 +111,7 @@ function renderMatchedSections(parent,sections,article){
       section.hits.forEach((hit,index)=>{
         const body=appendText(snippets,'article','','result-card');appendText(body,'p','片段 '+(index+1)+(hit.container_expanded?' · 容器已完整补全':''),'muted small');
         const content=appendText(body,'div','','hit-content');renderSnippet(content,hit.snippet_xml);
-        const raw=appendText(body,'details','','hit-location');appendText(raw,'summary','原始片段与块标识');appendText(raw,'pre',JSON.stringify(hit,null,2));
+        const raw=appendText(body,'details','','hit-location');appendText(raw,'summary','原始片段');appendText(raw,'pre',JSON.stringify(hit,null,2));
       });
     }
     if(section.children.length){const children=appendText(card,'div','','match-children');renderMatchedSections(children,section.children,article);}
@@ -134,7 +134,6 @@ function renderResult(result){
     appendText(panel,'p','完整业务 JSON：'+Array.from(json).length.toLocaleString()+' 字符 / '+(bytes/1024).toFixed(1)+' KiB（UTF-8）。字符数不等于模型 token 数。','muted small');
     if(!nodes.length)appendText(panel,'p','本次原生查询未返回命中。','empty');
     const tree=appendText(panel,'div','','match-tree');renderMatchedSections(tree,result.sections,result.article);
-    appendText(panel,'p',result.completeness,'muted small');
   }
   if(result.markdown_path){appendText(panel,'h3',result.scope==='full'?'全文已取得':'所选章节已取得');appendText(panel,'p','合并后 '+result.actual_ranges.length+' 段 · 文内图片 '+Object.keys(result.images).length+' 张','result-state');appendText(panel,'p',result.warnings.length?'素材存在未完成项，详见结构化结果。':'本次素材均已获取。','muted small');appendText(panel,'p','Markdown 保存位置','section-label');appendText(panel,'p',result.markdown_path,'path');}
 }

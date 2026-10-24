@@ -63,7 +63,7 @@ python3 skills/zeno-waytoagi-search/scripts/prototype_zen43/prototype.py read
 
 全文检索先执行 keyword；原生返回空内容时直接交付空命中，不读取全文。有命中时仍读取完整 XML 建立块归属和完整章节链，遇 excerpt 按顶层容器补 range，并核对修订一致。命中标题只交付标题，开篇正文用 `@opening` 衔接后续读取。CLI 成功输出直接返回业务 JSON，内部证据不混入结果。
 
-全文检索业务返回为 `sections` 命中章节树，`structure_scope=matched_sections_and_ancestors` 明确其不是全文目录。节点包含 `read_unit`、`title`、`hits` 和 `children`；同章命中放入 `hits` 数组，片段只挂在最具体的所属章节，祖先标题只保留一次。每个片段保留 `block_id`、`snippet_xml` 与 `container_expanded`。章节和片段均按全文位置排序，不依赖原生响应顺序。未命中且不是祖先的章节省略；可用节点的 `read_unit` 继续获取指定章节的结构或正文。完全无命中时返回 `sections: []`，不附全篇结构；无标题文章的命中合并至 `@document`。后者本轮有离线核对，未增加线上无标题样本。
+全文检索业务返回为 `sections` 命中章节树，只含命中章节及其祖先，不是全文目录。节点包含 `read_unit`、`title`、`hits` 和 `children`；同章命中放入 `hits` 数组，片段只挂在最具体的所属章节，祖先标题只保留一次。每个片段保留 `snippet_xml` 与 `container_expanded`；独立 `block_id` 仅在内部用于排序和定位，不在业务 JSON 重复返回。原始 XML 内已有的 ID 保持。章节和片段均按全文位置排序，不依赖原生响应顺序。未命中且不是祖先的章节省略；可用节点的 `read_unit` 继续获取指定章节的结构或正文。完全无命中时返回 `sections: []`，不附全篇结构；无标题文章的命中合并至 `@document`。后者本轮有离线核对，未增加线上无标题样本。固定范围规则及原生返回上限限制由工具说明表达，不返回 `structure_scope` 或固定声明式 `completeness`；删除声明不代表已证明服务端完整性。
 
 本轮实际 outline 只返回标题及 ID，缺少普通命中块与章节的归属；full 的 `max-depth=0` 在 PDF 样本上仍返回与无限深度完全一致的 15,248 字符，不能据参数名宣称已降低预读成本。尚未找到经过验证的轻量替代路径，因此有命中时保留 full。演示显示完整 JSON 的字符数与 UTF-8 字节数，不将字符数当作模型 token 数；完整命中集是否改为文件交付仍待后续决定。
 

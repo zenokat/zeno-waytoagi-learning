@@ -10,8 +10,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from demo import compact_result
-from prototype import Prototype, daily, main
+from demo import compact_result, section_nodes
+from prototype import Prototype, daily, main, xml_root
 
 
 class FulltextChecks(unittest.TestCase):
@@ -65,9 +65,9 @@ class FulltextChecks(unittest.TestCase):
         result = Prototype(self.folder.name).locate("article", ["关键词"])
         self.assertEqual(len(result["sections"]), 1)
         parent = result["sections"][0]
-        self.assertEqual([h["block_id"] for h in parent["hits"]], ["intro"])
+        self.assertEqual([xml_root(h["snippet_xml"])[0].get("id") for h in parent["hits"]], ["intro"])
         self.assertEqual([s["read_unit"] for s in parent["children"]], ["a", "c"])
-        self.assertEqual([h["block_id"] for h in parent["children"][0]["hits"]], ["a1", "a2"])
+        self.assertEqual([xml_root(h["snippet_xml"])[0].get("id") for h in parent["children"][0]["hits"]], ["a1", "a2"])
         self.assertNotIn("section_chain", json.dumps(result))
 
     def test_no_heading_has_one_reading_unit(self):
@@ -78,7 +78,7 @@ class FulltextChecks(unittest.TestCase):
         self.assertEqual(len(result["sections"]), 1)
         section = result["sections"][0]
         self.assertEqual(section["read_unit"], "@document")
-        self.assertEqual([h["block_id"] for h in section["hits"]], ["first", "last"])
+        self.assertEqual([xml_root(h["snippet_xml"])[0].get("id") for h in section["hits"]], ["first", "last"])
 
     def test_changed_revision_is_rejected(self):
         """关键词与结构修订不一致时拒绝拼接；预期抛出 ValueError。"""
@@ -100,6 +100,11 @@ class FulltextChecks(unittest.TestCase):
         self.assertEqual(status, 0)
         self.assertIn("sections", result)
         self.assertNotIn("evidence_dir", result)
+        self.assertNotIn("structure_scope", result)
+        self.assertNotIn("completeness", result)
+        for node in section_nodes(result["sections"]):
+            for hit in node["hits"]:
+                self.assertNotIn("block_id", hit)
         self.assertIn("snippet_xml", result["sections"][0]["hits"][0])
 
 

@@ -252,7 +252,7 @@ def run_demo(output):
         {"article": SAMPLE, "keywords": ["MinerU"]}, "locate", article=SAMPLE, keywords=["MinerU"])
     assert located["revision"] == single_a["revision"] == single_b["revision"]
     single_hits = [h for result in (single_a, single_b) for node in section_nodes(result["sections"]) for h in node["hits"]]
-    assert {h["block_id"] for h in located_hits} == {h["block_id"] for h in single_hits}
+    assert {h["snippet_xml"] for h in located_hits} == {h["snippet_xml"] for h in single_hits}
     checks["OR 与容器"] = f"{len(located_hits)} 个顶层命中单位；并集相等，表格补全"
     checks["命中章节快照"] = f"{len(located_hits)} 个片段归入 {sum(bool(node['hits']) for node in located_nodes)} 个直接命中读取单位；保留祖先共 {len(located_nodes)} 个节点，共享路径只出现一次"
 

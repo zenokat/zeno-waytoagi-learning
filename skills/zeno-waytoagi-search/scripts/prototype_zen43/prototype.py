@@ -114,7 +114,8 @@ def matched_section_tree(units, positions, hits):
         chain = [unit for unit in units if unit["start"] <= index < unit["end"]]
         if not chain:
             raise ValueError("命中块没有对应的章节或特殊读取单位")
-        grouped.setdefault(chain[-1]["id"], []).append(hit)
+        # 块 ID 只供内部定位与排序；业务片段不重复暴露独立 block_id 字段。
+        grouped.setdefault(chain[-1]["id"], []).append({key: value for key, value in hit.items() if key != "block_id"})
         retained.update(unit["id"] for unit in chain)
     roots, nodes = [], {}
     # units 已按文章位置排列，父章必然先于子章；片段排序不依赖服务端返回顺序。
@@ -298,9 +299,7 @@ class Prototype:
         """在 article 中以 keywords 的 OR 查询定位；返回按原文排列、合并片段的命中章节树。"""
         hits = self.fetch(article, "keyword", keyword="|".join(keywords), context_before=0, context_after=0)
         root = xml_root(hits["content"])
-        result = {"article": article, "revision": hits["revision_id"], "keywords": keywords, "sections": [],
-                  "structure_scope": "matched_sections_and_ancestors",
-                  "completeness": "本次原生返回集；不保证服务端任意大文档无上限"}
+        result = {"article": article, "revision": hits["revision_id"], "keywords": keywords, "sections": []}
         # 原生明确返回空内容时没有待补的位置；不为无命中查询再读取全文。
         if not hits["content"].strip() or not len(root):
             return result
