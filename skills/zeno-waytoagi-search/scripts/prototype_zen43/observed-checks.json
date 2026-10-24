@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-24",
+  "cli_version": "1.0.96",
+  "checks": {
+    "原生翻页": "10 页已读至结束",
+    "快照分页": "前两页无重复、日期倒序",
+    "缓存": "三个来源修订不变，复用解析结果",
+    "重复更新": "7 次记录归并为 2026-09-29 及该次原摘要",
+    "批量摘要": "两篇均与原日志逐字一致",
+    "章节层级": "H1 → H3 识别为父子两层",
+    "OR 与容器": "20 个顶层命中单位；并集相等，表格补全",
+    "多章合并与图片": "重叠合并为一段，4 张图片已落盘并嵌入",
+    "范围终点": "包括终章正文和子章节",
+    "全文与图片": "130 个顶层块，11 张图片",
+    "验证时间": "2026-10-24T14:45:58+08:00"
+  },
+  "source_revisions": [
+    {
+      "url": "https://waytoagi.feishu.cn/wiki/QPe5w5g7UisbEkkow8XcDmOpn8e",
+      "revision": 126396
+    },
+    {
+      "url": "https://waytoagi.feishu.cn/wiki/FjiOwWp2giA7hRk6jjfcPioCnAc",
+      "revision": 3289
+    },
+    {
+      "url": "https://waytoagi.feishu.cn/wiki/GL7xwM3fyitr4kkiv76c1GHjnNg",
+      "revision": 70
+    }
+  ],
+  "scope": "主要路径样本核对；技术解释与限制维护在 ZEN-43 关联 Linear 文档"
+}
