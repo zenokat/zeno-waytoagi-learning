@@ -1,0 +1,29 @@
+[
+  {
+    "article_id": "W1Lkw5pjyijyRHk99rMcy3VHnXf",
+    "url": "https://waytoagi.feishu.cn/wiki/W1Lkw5pjyijyRHk99rMcy3VHnXf",
+    "title": "云舒：和AI鸡同鸭讲了100次后，我干脆给自己写了一个“教练”提示词",
+    "date": "2025-06-30",
+    "summary": "在借助AI重构“提示词管理助手”架构时，作者遭遇诸多难题。AI生成的代码不实用，人工沟通又困难重重，只因给AI的上下文信息不足。偶然灵感闪现，作者创造“AI协作教练”提示词，先与之深入交流，获取精准指令，再让其他AI执行，效率大幅提升。作者分享了使用方式，并指出在AI时代，提升与AI协作能力才是关键，为大家提供了高效运用AI的新思路。 ",
+    "log_url": "https://waytoagi.feishu.cn/wiki/GL7xwM3fyitr4kkiv76c1GHjnNg",
+    "log_block_id": "KEcxdLbeJo1RFqxXwSYco9Ajn9f"
+  },
+  {
+    "article_id": "YTt3wPPIeixEK5kbJPnc0YL7nTf",
+    "url": "https://waytoagi.feishu.cn/wiki/YTt3wPPIeixEK5kbJPnc0YL7nTf",
+    "title": "《100 个问题》系列丛书",
+    "date": "2026-09-29",
+    "summary": "作者用 100 问的方式，把Jev模型的定位、成本优势、调用策略、生态风险和未来走向都拆开讲了下。可以帮助你用更轻松的方式快速摸清 Jev 到底值不值得放进自己的工具箱。",
+    "log_url": "https://waytoagi.feishu.cn/wiki/FjiOwWp2giA7hRk6jjfcPioCnAc",
+    "log_block_id": "PDQ8dqCZ0oP6aDxlYltctQTunFd"
+  },
+  {
+    "article_id": "DhAzwYRuTi8jack9kbocPD94nEe",
+    "url": "https://waytoagi.feishu.cn/wiki/DhAzwYRuTi8jack9kbocPD94nEe",
+    "title": "给大一新生的三万字World Models 和 World-Action Models 入学指南",
+    "date": "2026-10-15",
+    "summary": "World Model 最近越来越火，但很多人只知道它能“预测未来”，再往下就容易被强化学习、隐空间和视频生成等概念劝退。这份三万字指南梳理了 220 多项研究、六类技术路线及机器人、自动驾驶、游戏等应用，也直面“视频逼真是否等于理解物理”的争议。适合刚入门的学生和想补全研究版图的开发者，用一篇建立完整认知框架。",
+    "log_url": "https://waytoagi.feishu.cn/wiki/FjiOwWp2giA7hRk6jjfcPioCnAc",
+    "log_block_id": "Im4FdAJcHoxJdgxIjc7cRH07nCe"
+  }
+]
